@@ -11,6 +11,7 @@ def butterNormalized(wa, Gp, Ga):
 
 def butterLowPass(wc, wa, Gp, Ga):
     N, wp = signal.buttord(wc, wa, -dB(Gp), -dB(Ga), analog=True)
+    print(N)
     z, p, k = signal.butter(N, wp, analog=True, output='zpk')
     return z, p, k
 
