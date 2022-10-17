@@ -1,8 +1,8 @@
 from scipy import signal
 import numpy as np
+from utility import *
 
-def dB(G):
-    return 20*np.log10(G)
+
 
 def butterNormalized(wa, Gp, Ga):
     N, wp = signal.buttord(1, wa, -dB(Gp), -dB(Ga), analog=True)
@@ -20,15 +20,14 @@ def butterHighPass(wc, wa, Gp, Ga):
     z, p, k = signal.butter(N, wp, analog=True, output='zpk', btype='highpass')
     return z, p, k
 
-"""
-def butterLowPass(wc, wa, Gp, Ga):
+def butterBandPass(wc, wa, Gp, Ga):
     N, wp = signal.buttord(wc, wa, -dB(Gp), -dB(Ga), analog=True)
-    z, p, k = signal.butter(N, wp, analog=True, output='zpk')
+    z, p, k = signal.butter(N, wp, analog=True, output='zpk', btype='bandpass')
     return z, p, k
 
-def butterLowPass(wc, wa, Gp, Ga):
+def butterBandReject(wc, wa, Gp, Ga):
     N, wp = signal.buttord(wc, wa, -dB(Gp), -dB(Ga), analog=True)
-    z, p, k = signal.butter(N, wp, analog=True, output='zpk')
+    z, p, k = signal.butter(N, wp, analog=True, output='zpk', btype='bandstop')
     return z, p, k
-"""
+
 
