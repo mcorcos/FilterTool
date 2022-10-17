@@ -26,6 +26,7 @@ class plotWidget():
         self.ax.plot(wp, 10 ** (m / 20), label='Algún polinomio')
         self.ax.add_patch(Rectangle((0, 1), 1, -(1 - Gp), facecolor='green', alpha=0.2))
         self.ax.add_patch(Rectangle((wa, 0), 10 ** orderOfMagnitude(wa), Ga, facecolor='red', alpha=0.2))
+        self.ax.grid()
         self.canvas.draw()
 
     def plotLowPass(self, F, Gp, Ga, wc, wa):
@@ -36,17 +37,18 @@ class plotWidget():
         self.ax.add_patch(Rectangle((wa, 0), 10 ** orderOfMagnitude(wa), Ga, facecolor='red', alpha=0.2))
         #plt.xlim([0, wa + 1 + 10 ** orderOfMagnitude(wa)])
         #plt.ylim([0, 1.1])
-        plt.show()
+        self.ax.grid()
+        self.canvas.show()
 
     def plotLowPassBode(self, F, Gp, Ga, wc, wa):
-        wp, m, p = signal.bode(F, np.linspace(0, (wa) + 10 ** orderOfMagnitude(wa), 1000 + 10 ** orderOfMagnitude(wa)))
-        fig, ax = plt.subplots()
-        self.ax.plot(wp, m, label='Algún polinomio')
+        wp, m, p = signal.bode(F, np.logspace(orderOfMagnitude(wc) - 1, 1 + orderOfMagnitude(wa), 1000 + 10 ** orderOfMagnitude(wa)))
+        self.ax.semilogx(wp, m, label='Algún polinomio')
         self.ax.add_patch(Rectangle((0, dB(1)), wc, dB(Gp), facecolor='green', alpha=0.2))
         self.ax.add_patch(Rectangle((wa, dB(Ga)), 10 ** orderOfMagnitude(wa), -20, facecolor='red', alpha=0.2))
         #plt.xlim([0, wa + 1 + 10 ** orderOfMagnitude(wa)])
         #plt.ylim([0, 1.1])
-        plt.show()
+        self.ax.grid('log')
+        self.canvas.show()
 
     def plotHighPass(self, F, Gp, Ga, wc, wa):
         wp, m, p = signal.bode(F, np.linspace(0, (wc) + 10 ** orderOfMagnitude(wc), 1000 + 10 ** orderOfMagnitude(wc)))
@@ -95,6 +97,6 @@ class plotWidget():
         plt.show()
 
     def plotPolesZeroes(self, z, p):
-        plt.scatter(np.real(p), np.imag(p), marker='x', color='r')
+        self.ax.scatter(np.real(p), np.imag(p), marker='x', color='r')
         # plt.axis([-1.6, 1.6, -1.1, 1.1])
-        plt.show()
+        self.canvas.show()

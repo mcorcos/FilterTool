@@ -1,9 +1,9 @@
 from PyQt5 import QtWidgets, uic
+from PyQt5.QtWidgets import QVBoxLayout
 from filters import *
-from plots import *
 from scipy.signal import zpk2tf
 from plotWidget import plotWidget
-from PyQt5.QtGui import QKeySequence
+from plots import plots
 
 class iniciar:
     def __init__(self):
@@ -19,19 +19,22 @@ class iniciar:
         self.EscalonLowPass = plotWidget()
         self.PZLowPass = plotWidget()
 
+        self.lowPass = plots()
 
-        self.ventana.hola.addWidget(self.TemplateLowPass.navToolBar)
-        self.ventana.hola.addWidget(self.TemplateLowPass.canvas)
-        self.ventana.BodeVecesLowPass.addWidget(self.BodeVecesLowPass.navToolBar)
-        self.ventana.BodeVecesLowPass.addWidget(self.BodeVecesLowPass.canvas)
-        self.ventana.BodeLowPass.addWidget(self.BodeLowPass.navToolBar)
-        self.ventana.BodeLowPass.addWidget(self.BodeLowPass.canvas)
-        self.ventana.FaseLowPass.addWidget(self.FaseLowPass.navToolBar)
-        self.ventana.FaseLowPass.addWidget(self.FaseLowPass.canvas)
-        self.ventana.EscalonLowPass.addWidget(self.EscalonLowPass.navToolBar)
-        self.ventana.EscalonLowPass.addWidget(self.EscalonLowPass.canvas)
-        self.ventana.PZLowPass.addWidget(self.PZLowPass.navToolBar)
-        self.ventana.PZLowPass.addWidget(self.PZLowPass.canvas)
+        self.createCanvas(self.lowPass)
+
+        #self.ventana.hola.addWidget(self.TemplateLowPass.navToolBar)
+        #self.ventana.hola.addWidget(self.TemplateLowPass.canvas)
+        #self.ventana.BodeVecesLowPass.addWidget(self.BodeVecesLowPass.navToolBar)
+        #self.ventana.BodeVecesLowPass.addWidget(self.BodeVecesLowPass.canvas)
+        #self.ventana.BodeLowPass.addWidget(self.BodeLowPass.navToolBar)
+        #self.ventana.BodeLowPass.addWidget(self.BodeLowPass.canvas)
+        #self.ventana.FaseLowPass.addWidget(self.FaseLowPass.navToolBar)
+        #self.ventana.FaseLowPass.addWidget(self.FaseLowPass.canvas)
+        #self.ventana.EscalonLowPass.addWidget(self.EscalonLowPass.navToolBar)
+        #self.ventana.EscalonLowPass.addWidget(self.EscalonLowPass.canvas)
+        #self.ventana.PZLowPass.addWidget(self.PZLowPass.navToolBar)
+        #self.ventana.PZLowPass.addWidget(self.PZLowPass.canvas)
 
         self.lowPassPage = 0
 
@@ -48,19 +51,26 @@ class iniciar:
 
         app.exec()
 
+    def createCanvas(self, plot):
+        if plot.type == 'lowPass':
+            i = 5
+            for layout in self.ventana.LowPassStack.findChildren(QVBoxLayout):
+                layout.addWidget(plot.array[i].navToolBar)
+                layout.addWidget(plot.array[i].canvas)
+                i = i - 1
+
+
     def nextPage(self):
         index = self.ventana.filterTabs.currentIndex()
         if index == 0:
             self.lowPassPage = self.lowPassPage + 1
-            print(self.lowPassPage)
-            self.ventana.stackedWidget.setCurrentIndex(self.lowPassPage)
+            self.ventana.LowPassStack.setCurrentIndex(self.lowPassPage)
 
     def prevPage(self):
         index = self.ventana.filterTabs.currentIndex()
-        print(index)
         if index == 0:
             self.lowPassPage = self.lowPassPage - 1
-            self.ventana.stackedWidget.setCurrentIndex(self.lowPassPage)
+            self.ventana.LowPassStack.setCurrentIndex(self.lowPassPage)
 
     def plotAll(self):
         index = self.ventana.filterTabs.currentIndex()
@@ -88,11 +98,11 @@ class iniciar:
         Wan = Wa/Wp
         if self.ventana.LowPassCombo.currentIndex() == 0:
             zn, pn, kn = butterNormalized(Wan, Gp, Ga)
-            self.TemplateLowPass.plotTemplate(zpk2tf(zn, pn, kn), Gp, Ga, Wan)
+            self.lowPass.array[0].plotTemplate(zpk2tf(zn, pn, kn), Gp, Ga, Wan)
             z, p, k = butterLowPass(Wp, Wa, Gp, Ga)
-            self.BodeVecesLowPass.plotLowPass(zpk2tf(z, p, k), Gp, Ga, Wp, Wa)
-            self.BodeLowPass.plotLowPassBode(zpk2tf(z, p, k), Gp, Ga, Wp, Wa)
-            self.PZLowPass.plotPolesZeroes(z, p)
+            self.lowPass.array[1].plotLowPass(zpk2tf(z, p, k), Gp, Ga, Wp, Wa)
+            self.lowPass.array[2].plotLowPassBode(zpk2tf(z, p, k), Gp, Ga, Wp, Wa)
+            self.lowPass.array[5].plotPolesZeroes(z, p)
 
 
 

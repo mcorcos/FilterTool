@@ -25,7 +25,7 @@ color: rgb(185, 201, 221);
 border-color: rgb(7, 54, 66);</string>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="lowPassTab">
       <attribute name="title">
@@ -339,9 +339,9 @@ selection-background-color: rgb(202, 237, 242);
         </widget>
        </item>
        <item>
-        <widget class="QStackedWidget" name="stackedWidget">
+        <widget class="QStackedWidget" name="LowPassStack">
          <property name="currentIndex">
-          <number>5</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="stackedWidget_1">
           <layout class="QHBoxLayout" name="horizontalLayout_3">
