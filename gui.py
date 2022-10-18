@@ -12,31 +12,10 @@ class iniciar:
         self.ventana = uic.loadUi("GUI.ui")
         self.ventana.show()
 
-        self.TemplateLowPass = plotWidget()
-        self.BodeVecesLowPass = plotWidget()
-        self.BodeLowPass = plotWidget()
-        self.FaseLowPass = plotWidget()
-        self.EscalonLowPass = plotWidget()
-        self.PZLowPass = plotWidget()
-
         self.lowPass = plots()
-
         self.createCanvas(self.lowPass)
-
-        #self.ventana.hola.addWidget(self.TemplateLowPass.navToolBar)
-        #self.ventana.hola.addWidget(self.TemplateLowPass.canvas)
-        #self.ventana.BodeVecesLowPass.addWidget(self.BodeVecesLowPass.navToolBar)
-        #self.ventana.BodeVecesLowPass.addWidget(self.BodeVecesLowPass.canvas)
-        #self.ventana.BodeLowPass.addWidget(self.BodeLowPass.navToolBar)
-        #self.ventana.BodeLowPass.addWidget(self.BodeLowPass.canvas)
-        #self.ventana.FaseLowPass.addWidget(self.FaseLowPass.navToolBar)
-        #self.ventana.FaseLowPass.addWidget(self.FaseLowPass.canvas)
-        #self.ventana.EscalonLowPass.addWidget(self.EscalonLowPass.navToolBar)
-        #self.ventana.EscalonLowPass.addWidget(self.EscalonLowPass.canvas)
-        #self.ventana.PZLowPass.addWidget(self.PZLowPass.navToolBar)
-        #self.ventana.PZLowPass.addWidget(self.PZLowPass.canvas)
-
         self.lowPassPage = 0
+        self.lowPassData = []
 
         self.ventana.RightLowPass.clicked.connect(self.nextPage)
         self.ventana.LeftLowPass.clicked.connect(self.prevPage)
@@ -48,6 +27,11 @@ class iniciar:
         self.plotButtons.addButton(self.ventana.BandRejectBtn, 3)
 
         self.plotButtons.buttonClicked.connect(self.plotAll)
+
+        self.deleteButtons = QtWidgets.QButtonGroup()
+        self.deleteButtons.addButton(self.ventana.lowPassElim, 0)
+
+        self.deleteButtons.buttonClicked.connect(self.deleteAll)
 
         app.exec()
 
@@ -75,9 +59,18 @@ class iniciar:
     def plotAll(self):
         index = self.ventana.filterTabs.currentIndex()
         if index == 0:
+            self.lowPassData.append(self.getDataLowHigh(0))
             self.plotLowPass()
+            self.ventana.lowPassList.addItem(self.ventana.LowPassLabel.text())
         elif index == 1:
             self.plotHighPass()
+
+    def deleteAll(self):
+        index = self.ventana.filterTabs.currentIndex()
+        if index == 0:
+            self.lowPass.array[0].ax.lines.pop(self.ventana.lowPassList.currentIndex() - 1)
+
+
 
     def getDataLowHigh(self, index):
         if index == 0:
@@ -85,25 +78,36 @@ class iniciar:
             Gp = float(self.ventana.LowPassGp.text())
             Wa = float(self.ventana.LowPassWa.text())
             Ga = float(self.ventana.LowPassGa.text())
+            N = self.ventana.LowPassN.text()
+            label = self.ventana.LowPassLabel.text()
+            if not N:
+                N = 0
+            N = int(N)
         elif index == 1:
             Wp = float(self.ventana.HighPassWp.text())
             Gp = float(self.ventana.HighPassGp.text())
             Wa = float(self.ventana.HighPassWa.text())
             Ga = float(self.ventana.HighPassGa.text())
-        return Wp, Gp, Wa, Ga
-
+        return Wp, Gp, Wa, Ga, N, label
 
     def plotLowPass(self):
-        Wp, Gp, Wa, Ga = self.getDataLowHigh(0)
+        Wp, Gp, Wa, Ga, Nin, label = self.lowPassData[-1]
         Wan = Wa/Wp
         if self.ventana.LowPassCombo.currentIndex() == 0:
-            zn, pn, kn = butterNormalized(Wan, Gp, Ga)
+            if Nin == 0:
+                self.lowPass.array[0].patchLowPass(Gp, Ga, 1, Wan)
+                self.lowPass.array[1].patchLowPass(Gp, Ga, Wp, Wa)
+                self.lowPass.array[2].patchLowPassBode(Gp, Ga, Wp, Wa)
+            zn, pn, kn = butterNormalized(Wan, Gp, Ga, Nin)
             self.lowPass.array[0].plotTemplate(zpk2tf(zn, pn, kn), Gp, Ga, Wan)
-            z, p, k = butterLowPass(Wp, Wa, Gp, Ga)
+            z, p, k, N = butterLowPass(Wp, Wa, Gp, Ga, Nin)
             self.lowPass.array[1].plotLowPass(zpk2tf(z, p, k), Gp, Ga, Wp, Wa)
             self.lowPass.array[2].plotLowPassBode(zpk2tf(z, p, k), Gp, Ga, Wp, Wa)
             self.lowPass.array[5].plotPolesZeroes(z, p)
+        self.ventana.LowPassN.setText(str(N))
 
+    def showData(self):
+        print('hola')
 
 
     def plotHighPass(self):

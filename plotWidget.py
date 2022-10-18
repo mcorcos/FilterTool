@@ -20,12 +20,20 @@ class plotWidget():
         plt.tight_layout()
         self.navToolBar = NavigationToolbar(self.canvas, parent=parent)
 
+    def patchLowPass(self, Gp, Ga, wc, wa):
+        self.ax.add_patch(Rectangle((0, 1), wc, -(1 - Gp), facecolor='green', alpha=0.2))
+        self.ax.add_patch(Rectangle((wa, 0), 10 ** orderOfMagnitude(wa), Ga, facecolor='red', alpha=0.2))
+        self.canvas.show()
+
+    def patchLowPassBode(self, Gp, Ga, wc, wa):
+        self.ax.add_patch(Rectangle((0, dB(1)), wc, dB(Gp), facecolor='green', alpha=0.2))
+        self.ax.add_patch(Rectangle((wa, dB(Ga)), 10 ** orderOfMagnitude(wa), -20, facecolor='red', alpha=0.2))
+        self.canvas.show()
+
     def plotTemplate(self, F, Gp, Ga, wa):
         wp, m, p = signal.bode(F, np.linspace(0, (wa) + 10 ** orderOfMagnitude(wa), 1000 + 10 ** orderOfMagnitude(wa)))
         fig, ax = plt.subplots()
         self.ax.plot(wp, 10 ** (m / 20), label='Algún polinomio')
-        self.ax.add_patch(Rectangle((0, 1), 1, -(1 - Gp), facecolor='green', alpha=0.2))
-        self.ax.add_patch(Rectangle((wa, 0), 10 ** orderOfMagnitude(wa), Ga, facecolor='red', alpha=0.2))
         self.ax.grid()
         self.canvas.draw()
 
@@ -33,8 +41,6 @@ class plotWidget():
         wp, m, p = signal.bode(F, np.linspace(0, (wa) + 10 ** orderOfMagnitude(wa), 1000 + 10 ** orderOfMagnitude(wa)))
         fig, ax = plt.subplots()
         self.ax.plot(wp, 10 ** (m / 20), label='Algún polinomio')
-        self.ax.add_patch(Rectangle((0, 1), wc, -(1 - Gp), facecolor='green', alpha=0.2))
-        self.ax.add_patch(Rectangle((wa, 0), 10 ** orderOfMagnitude(wa), Ga, facecolor='red', alpha=0.2))
         #plt.xlim([0, wa + 1 + 10 ** orderOfMagnitude(wa)])
         #plt.ylim([0, 1.1])
         self.ax.grid()
@@ -43,8 +49,6 @@ class plotWidget():
     def plotLowPassBode(self, F, Gp, Ga, wc, wa):
         wp, m, p = signal.bode(F, np.logspace(orderOfMagnitude(wc) - 1, 1 + orderOfMagnitude(wa), 1000 + 10 ** orderOfMagnitude(wa)))
         self.ax.semilogx(wp, m, label='Algún polinomio')
-        self.ax.add_patch(Rectangle((0, dB(1)), wc, dB(Gp), facecolor='green', alpha=0.2))
-        self.ax.add_patch(Rectangle((wa, dB(Ga)), 10 ** orderOfMagnitude(wa), -20, facecolor='red', alpha=0.2))
         #plt.xlim([0, wa + 1 + 10 ** orderOfMagnitude(wa)])
         #plt.ylim([0, 1.1])
         self.ax.grid('log')
