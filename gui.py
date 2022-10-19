@@ -112,7 +112,7 @@ class iniciar:
 
     def template(self):
         Wp, Gp, Wa, Ga, Nin, label = self.lowPassData[-1]
-        if self.ventana.LowPassCombo.currentIndex() == 0:
+        if self.ventana.filterTabs.currentIndex() == 0:
             [p.remove() for p in reversed(self.lowPass.array[0].ax.patches)]
             Wan = Wa / Wp
             self.lowPass.array[0].patchLowPass(Gp, Ga, 1, Wan)
@@ -128,7 +128,12 @@ class iniciar:
             z, p, k, N = butterLowPass(Wp, Wa, Gp, Ga, Nin)
             self.lowPass.array[1].plotLowPass(zpk2tf(z, p, k), Gp, Ga, Wp, Wa)
             self.lowPass.array[2].plotLowPassBode(zpk2tf(z, p, k), Gp, Ga, Wp, Wa)
-            self.lowPass.array[5].plotPolesZeroes(z, p)
+        elif self.ventana.LowPassCombo.currentIndex() == 1:
+            zn, pn, kn = chevyINormalized(Wan, Gp, Ga, Nin)
+            self.lowPass.array[0].plotTemplate(zpk2tf(zn, pn, kn), Gp, Ga, Wan)
+            z, p, k, N = chevyILowPass(Wp, Wa, Gp, Ga, Nin)
+            self.lowPass.array[1].plotLowPass(zpk2tf(z, p, k), Gp, Ga, Wp, Wa)
+        self.lowPass.array[5].plotPolesZeroes(z, p)
         self.ventana.LowPassN.setText(str(N))
         self.lowPassData.pop(-1)
         self.lowPassData.append([Wp, Gp, Wa, Ga, N, label])
