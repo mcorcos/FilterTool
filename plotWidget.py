@@ -82,6 +82,8 @@ class plotWidget():
         # plt.ylim([0, 1.1])
         plt.show()
 
+
+
     def plotBandReject(self, F, Gp, Ga, wcmin, wcmax, wamin, wamax, gain='veces'):
         wp, m, p = signal.bode(F, np.linspace(0, (wcmax) + 10 ** orderOfMagnitude(wcmax),
                                               1000 + 10 ** orderOfMagnitude(wcmax)))

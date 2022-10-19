@@ -25,7 +25,7 @@ color: rgb(185, 201, 221);
 border-color: rgb(7, 54, 66);</string>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="lowPassTab">
       <attribute name="title">
@@ -48,7 +48,7 @@ border-color: rgb(7, 54, 66);</string>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton">
+          <widget class="QPushButton" name="newLowPass">
            <property name="text">
             <string>Nueva Curva</string>
            </property>

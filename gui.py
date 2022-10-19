@@ -26,12 +26,22 @@ class iniciar:
         self.plotButtons.addButton(self.ventana.BandPassBtn, 2)
         self.plotButtons.addButton(self.ventana.BandRejectBtn, 3)
 
+        self.plotButtons.buttonClicked.connect(self.getDataLowHigh)
+        self.plotButtons.buttonClicked.connect(self.template)
         self.plotButtons.buttonClicked.connect(self.plotAll)
 
         self.deleteButtons = QtWidgets.QButtonGroup()
         self.deleteButtons.addButton(self.ventana.lowPassElim, 0)
 
         self.deleteButtons.buttonClicked.connect(self.deleteAll)
+
+        self.newButtons = QtWidgets.QButtonGroup()
+        self.newButtons.addButton(self.ventana.newLowPass, 0)
+
+        self.newButtons.buttonClicked.connect(self.getDataLowHigh)
+        self.newButtons.buttonClicked.connect(self.plotAll)
+
+        self.ventana.lowPassList.currentIndexChanged.connect(self.showData)
 
         app.exec()
 
@@ -59,7 +69,6 @@ class iniciar:
     def plotAll(self):
         index = self.ventana.filterTabs.currentIndex()
         if index == 0:
-            self.lowPassData.append(self.getDataLowHigh(0))
             self.plotLowPass()
             self.ventana.lowPassList.addItem(self.ventana.LowPassLabel.text())
         elif index == 1:
@@ -69,10 +78,21 @@ class iniciar:
         index = self.ventana.filterTabs.currentIndex()
         if index == 0:
             self.lowPass.array[0].ax.lines.pop(self.ventana.lowPassList.currentIndex() - 1)
+            self.lowPassData.pop(self.ventana.lowPassList.currentIndex() - 1)
+            self.ventana.lowPassList.removeItem(self.ventana.lowPassList.currentIndex())
 
+    def showData(self, index):
+        if index != 0:
+            Wp, Gp, Wa, Ga, N, label = self.lowPassData[index - 1]
+            self.ventana.LowPassWp.setText(str(Wp))
+            self.ventana.LowPassWa.setText(str(Wa))
+            self.ventana.LowPassGp.setText(str(Gp))
+            self.ventana.LowPassGa.setText(str(Ga))
+            self.ventana.LowPassN.setText(str(N))
+            self.ventana.LowPassLabel.setText(label)
 
-
-    def getDataLowHigh(self, index):
+    def getDataLowHigh(self):
+        index = self.ventana.filterTabs.currentIndex()
         if index == 0:
             Wp = float(self.ventana.LowPassWp.text())
             Gp = float(self.ventana.LowPassGp.text())
@@ -88,16 +108,21 @@ class iniciar:
             Gp = float(self.ventana.HighPassGp.text())
             Wa = float(self.ventana.HighPassWa.text())
             Ga = float(self.ventana.HighPassGa.text())
-        return Wp, Gp, Wa, Ga, N, label
+        self.lowPassData.append([Wp, Gp, Wa, Ga, N, label])
+
+    def template(self):
+        Wp, Gp, Wa, Ga, Nin, label = self.lowPassData[-1]
+        if self.ventana.LowPassCombo.currentIndex() == 0:
+            [p.remove() for p in reversed(self.lowPass.array[0].ax.patches)]
+            Wan = Wa / Wp
+            self.lowPass.array[0].patchLowPass(Gp, Ga, 1, Wan)
+            self.lowPass.array[1].patchLowPass(Gp, Ga, Wp, Wa)
+            self.lowPass.array[2].patchLowPassBode(Gp, Ga, Wp, Wa)
 
     def plotLowPass(self):
         Wp, Gp, Wa, Ga, Nin, label = self.lowPassData[-1]
         Wan = Wa/Wp
         if self.ventana.LowPassCombo.currentIndex() == 0:
-            if Nin == 0:
-                self.lowPass.array[0].patchLowPass(Gp, Ga, 1, Wan)
-                self.lowPass.array[1].patchLowPass(Gp, Ga, Wp, Wa)
-                self.lowPass.array[2].patchLowPassBode(Gp, Ga, Wp, Wa)
             zn, pn, kn = butterNormalized(Wan, Gp, Ga, Nin)
             self.lowPass.array[0].plotTemplate(zpk2tf(zn, pn, kn), Gp, Ga, Wan)
             z, p, k, N = butterLowPass(Wp, Wa, Gp, Ga, Nin)
@@ -105,10 +130,8 @@ class iniciar:
             self.lowPass.array[2].plotLowPassBode(zpk2tf(z, p, k), Gp, Ga, Wp, Wa)
             self.lowPass.array[5].plotPolesZeroes(z, p)
         self.ventana.LowPassN.setText(str(N))
-
-    def showData(self):
-        print('hola')
-
+        self.lowPassData.pop(-1)
+        self.lowPassData.append([Wp, Gp, Wa, Ga, N, label])
 
     def plotHighPass(self):
         Wp, Gp, Wa, Ga = self.getDataLowHigh(1)
