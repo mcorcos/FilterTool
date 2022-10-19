@@ -19,6 +19,8 @@ class plotWidget():
         self.ax = self.fig.add_subplot()
         plt.tight_layout()
         self.navToolBar = NavigationToolbar(self.canvas, parent=parent)
+        self.colorMap = plt.rcParams['axes.prop_cycle'].by_key()['color']
+        self.colorIndex = 0
 
     def patchLowPass(self, Gp, Ga, wc, wa):
         self.ax.add_patch(Rectangle((0, 1), wc, -(1 - Gp), facecolor='green', alpha=0.2))
@@ -103,6 +105,10 @@ class plotWidget():
         plt.show()
 
     def plotPolesZeroes(self, z, p):
-        self.ax.scatter(np.real(p), np.imag(p), marker='x', color='r')
+        self.ax.scatter(np.real(p), np.imag(p), marker='x', color=self.colorMap[self.colorIndex])
+        self.ax.scatter(np.real(z), np.imag(z), marker='o', color=self.colorMap[self.colorIndex])
+        self.ax.set_aspect('equal')
+        self.ax.grid()
+        self.colorIndex = self.colorIndex + 1
         # plt.axis([-1.6, 1.6, -1.1, 1.1])
         self.canvas.show()

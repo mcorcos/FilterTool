@@ -124,15 +124,16 @@ class iniciar:
         Wan = Wa/Wp
         if self.ventana.LowPassCombo.currentIndex() == 0:
             zn, pn, kn = butterNormalized(Wan, Gp, Ga, Nin)
-            self.lowPass.array[0].plotTemplate(zpk2tf(zn, pn, kn), Gp, Ga, Wan)
             z, p, k, N = butterLowPass(Wp, Wa, Gp, Ga, Nin)
-            self.lowPass.array[1].plotLowPass(zpk2tf(z, p, k), Gp, Ga, Wp, Wa)
-            self.lowPass.array[2].plotLowPassBode(zpk2tf(z, p, k), Gp, Ga, Wp, Wa)
         elif self.ventana.LowPassCombo.currentIndex() == 1:
             zn, pn, kn = chevyINormalized(Wan, Gp, Ga, Nin)
-            self.lowPass.array[0].plotTemplate(zpk2tf(zn, pn, kn), Gp, Ga, Wan)
             z, p, k, N = chevyILowPass(Wp, Wa, Gp, Ga, Nin)
-            self.lowPass.array[1].plotLowPass(zpk2tf(z, p, k), Gp, Ga, Wp, Wa)
+        elif self.ventana.LowPassCombo.currentIndex() == 2:
+            zn, pn, kn = chevyIINormalized(Wan, Gp, Ga, Nin)
+            z, p, k, N = chevyIILowPass(Wp, Wa, Gp, Ga, Nin)
+        self.lowPass.array[0].plotTemplate(zpk2tf(zn, pn, kn), Gp, Ga, Wan)
+        self.lowPass.array[1].plotLowPass(zpk2tf(z, p, k), Gp, Ga, Wp, Wa)
+        self.lowPass.array[2].plotLowPassBode(zpk2tf(z, p, k), Gp, Ga, Wp, Wa)
         self.lowPass.array[5].plotPolesZeroes(z, p)
         self.ventana.LowPassN.setText(str(N))
         self.lowPassData.pop(-1)
