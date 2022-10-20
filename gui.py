@@ -12,13 +12,26 @@ class iniciar:
         self.ventana = uic.loadUi("GUI.ui")
         self.ventana.show()
 
-        self.lowPass = plots()
+        self.lowPass = plots('lowPass')
         self.createCanvas(self.lowPass)
         self.lowPassPage = 0
         self.lowPassData = []
 
-        self.ventana.RightLowPass.clicked.connect(self.nextPage)
-        self.ventana.LeftLowPass.clicked.connect(self.prevPage)
+        self.highPass = plots('highPass')
+        self.createCanvas(self.highPass)
+        self.highPassPage = 0
+        self.highPassData = []
+
+        self.rightButtons = QtWidgets.QButtonGroup()
+        self.rightButtons.addButton(self.ventana.RightLowPass, 0)
+        self.rightButtons.addButton(self.ventana.RightHighPass, 1)
+
+        self.leftButtons = QtWidgets.QButtonGroup()
+        self.leftButtons.addButton(self.ventana.LeftLowPass, 0)
+        self.leftButtons.addButton(self.ventana.LeftHighPass, 1)
+
+        self.rightButtons.buttonClicked.connect(self.nextPage)
+        self.leftButtons.buttonClicked.connect(self.prevPage)
 
         self.plotButtons = QtWidgets.QButtonGroup()
         self.plotButtons.addButton(self.ventana.LowPassBtn, 0)
@@ -41,14 +54,20 @@ class iniciar:
         self.newButtons.buttonClicked.connect(self.getDataLowHigh)
         self.newButtons.buttonClicked.connect(self.plotAll)
 
-        self.ventana.lowPassList.currentIndexChanged.connect(self.showData)
+        self.ventana.lowPassList.currentIndexChanged.connect(self.showDataLP)
+        self.ventana.highPassList.currentIndexChanged.connect(self.showDataHP)
 
         app.exec()
 
     def createCanvas(self, plot):
+        i = 7
         if plot.type == 'lowPass':
-            i = 7
             for layout in self.ventana.LowPassStack.findChildren(QVBoxLayout):
+                layout.addWidget(plot.array[i].navToolBar)
+                layout.addWidget(plot.array[i].canvas)
+                i = i - 1
+        if plot.type == 'highPass':
+            for layout in self.ventana.HighPassStack.findChildren(QVBoxLayout):
                 layout.addWidget(plot.array[i].navToolBar)
                 layout.addWidget(plot.array[i].canvas)
                 i = i - 1
@@ -59,12 +78,18 @@ class iniciar:
         if index == 0:
             self.lowPassPage = self.lowPassPage + 1
             self.ventana.LowPassStack.setCurrentIndex(self.lowPassPage)
+        if index == 1:
+            self.highPassPage = self.highPassPage + 1
+            self.ventana.HighPassStack.setCurrentIndex(self.highPassPage)
 
     def prevPage(self):
         index = self.ventana.filterTabs.currentIndex()
         if index == 0:
             self.lowPassPage = self.lowPassPage - 1
-            self.ventana.LowPassStack.setCurrentIndex(self.lowPassPage)
+            self.ventana.LowPassStack.setCurrentIndex(self.highPassPage)
+        if index == 1:
+            self.highPassPage = self.highPassPage - 1
+            self.ventana.HighPassStack.setCurrentIndex(self.highPassPage)
 
     def plotAll(self):
         index = self.ventana.filterTabs.currentIndex()
@@ -73,6 +98,7 @@ class iniciar:
             self.ventana.lowPassList.addItem(self.ventana.LowPassLabel.text())
         elif index == 1:
             self.plotHighPass()
+            self.ventana.highPassList.addItem(self.ventana.HighPassLabel.text())
 
     def deleteAll(self):
         index = self.ventana.filterTabs.currentIndex()
@@ -85,10 +111,25 @@ class iniciar:
                     self.lowPass.array[i].scatterPoles.pop(self.ventana.lowPassList.currentIndex() - 1)
                     self.lowPass.array[i].scatterZeroes[self.ventana.lowPassList.currentIndex() - 1].remove()
                     self.lowPass.array[i].scatterZeroes.pop(self.ventana.lowPassList.currentIndex() - 1)
+                self.lowPass.array[i].ax.legend()
             self.lowPassData.pop(self.ventana.lowPassList.currentIndex() - 1)
             self.ventana.lowPassList.removeItem(self.ventana.lowPassList.currentIndex())
+        elif index == 1:
+            print(1)
+            for i in range(len(self.highPass.array)):
+                if i != 7:
+                    self.highPass.array[i].ax.lines.pop(self.ventana.highPassList.currentIndex() - 1)
+                else:
+                    self.highPass.array[i].scatterPoles[self.ventana.highPassList.currentIndex() - 1].remove()
+                    self.highPass.array[i].scatterPoles.pop(self.ventana.highPassList.currentIndex() - 1)
+                    self.highPass.array[i].scatterZeroes[self.ventana.highPassList.currentIndex() - 1].remove()
+                    self.highPass.array[i].scatterZeroes.pop(self.ventana.highPassList.currentIndex() - 1)
+                self.highPass.array[i].ax.legend()
+            self.highPassData.pop(self.ventana.highPassList.currentIndex() - 1)
+            self.ventana.highPassList.removeItem(self.ventana.highPassList.currentIndex())
 
-    def showData(self, index):
+
+    def showDataLP(self, index):
         if index != 0:
             Wp, Gp, Wa, Ga, N, label, fIndex = self.lowPassData[index - 1]
             self.ventana.LowPassWp.setText(str(Wp))
@@ -98,6 +139,17 @@ class iniciar:
             self.ventana.LowPassN.setText(str(N))
             self.ventana.LowPassLabel.setText(label)
             self.ventana.LowPassCombo.setCurrentIndex(fIndex)
+
+    def showDataHP(self, index):
+        if index != 0:
+            Wp, Gp, Wa, Ga, N, label, fIndex = self.highPassData[index - 1]
+            self.ventana.HighPassWp.setText(str(Wp))
+            self.ventana.HighPassWa.setText(str(Wa))
+            self.ventana.HighPassGp.setText(str(Gp))
+            self.ventana.HighPassGa.setText(str(Ga))
+            self.ventana.HighPassN.setText(str(N))
+            self.ventana.HighPassLabel.setText(label)
+            self.ventana.HighPassCombo.setCurrentIndex(fIndex)
 
     def getDataLowHigh(self):
         index = self.ventana.filterTabs.currentIndex()
@@ -112,51 +164,85 @@ class iniciar:
             if not N:
                 N = 0
             N = int(N)
+            self.lowPassData.append([Wp, Gp, Wa, Ga, N, label, fIndex])
         elif index == 1:
             Wp = float(self.ventana.HighPassWp.text())
             Gp = float(self.ventana.HighPassGp.text())
             Wa = float(self.ventana.HighPassWa.text())
             Ga = float(self.ventana.HighPassGa.text())
-        self.lowPassData.append([Wp, Gp, Wa, Ga, N, label, fIndex])
+            N = self.ventana.HighPassN.text()
+            label = self.ventana.HighPassLabel.text()
+            fIndex = self.ventana.HighPassCombo.currentIndex()
+            if not N:
+                N = 0
+            N = int(N)
+            self.highPassData.append([Wp, Gp, Wa, Ga, N, label, fIndex])
+
 
     def template(self):
-        Wp, Gp, Wa, Ga, Nin, label, fIndex = self.lowPassData[-1]
         if self.ventana.filterTabs.currentIndex() == 0:
+            Wp, Gp, Wa, Ga, Nin, label, fIndex = self.lowPassData[-1]
             [p.remove() for p in reversed(self.lowPass.array[0].ax.patches)]
             Wan = Wa / Wp
             self.lowPass.array[0].patchLowPass(Gp, Ga, 1, Wan)
             self.lowPass.array[1].patchLowPass(Gp, Ga, Wp, Wa)
             self.lowPass.array[2].patchLowPassBode(Gp, Ga, Wp, Wa)
             self.lowPass.array[3].patchLowPassAt(Gp, Ga, Wp, Wa)
+        else:
+            print('hola')
 
     def plotLowPass(self):
         Wp, Gp, Wa, Ga, Nin, label, fIndex = self.lowPassData[-1]
         Wan = Wa/Wp
         if self.ventana.LowPassCombo.currentIndex() == 0:
             zn, pn, kn = butterNormalized(Wan, Gp, Ga, Nin)
-            z, p, k, N = butterLowPass(Wp, Wa, Gp, Ga, Nin)
+            z, p, k, N = butter(Wp, Wa, Gp, Ga, 'lowpass', Nin)
         elif self.ventana.LowPassCombo.currentIndex() == 1:
             zn, pn, kn = chevyINormalized(Wan, Gp, Ga, Nin)
-            z, p, k, N = chevyILowPass(Wp, Wa, Gp, Ga, Nin)
+            z, p, k, N = chevyI(Wp, Wa, Gp, Ga, 'lowpass', Nin)
         elif self.ventana.LowPassCombo.currentIndex() == 2:
             zn, pn, kn = chevyIINormalized(Wan, Gp, Ga, Nin)
-            z, p, k, N = chevyIILowPass(Wp, Wa, Gp, Ga, Nin)
+            z, p, k, N = chevyII(Wp, Wa, Gp, Ga, 'lowpass', Nin)
         elif self.ventana.LowPassCombo.currentIndex() == 3:
             zn, pn, kn = cauerNormalized(Wan, Gp, Ga, Nin)
-            z, p, k, N = cauerLowPass(Wp, Wa, Gp, Ga, Nin)
+            z, p, k, N = cauer(Wp, Wa, Gp, Ga, 'lowpass', Nin)
         F = zpk2tf(z, p, k)
         self.lowPass.array[0].plotTemplate(zpk2tf(zn, pn, kn), Gp, Ga, Wan, label)
-        self.lowPass.array[1].plotLowPass(F, Gp, Ga, Wp, Wa, label)
-        self.lowPass.array[2].plotLowPassBode(F, Gp, Ga, Wp, Wa, label)
-        self.lowPass.array[3].plotLowPassAt(F, Wp, Wa, label)
-        self.lowPass.array[4].plotLowPassAt(F, Wp, Wa, label)
-        self.lowPass.array[5].plotLowPassAt(F, Wp, Wa, label)
-        self.lowPass.array[6].plotLowPassAt(F, Wp, Wa, label)
+        self.lowPass.array[1].plotVeces(F, Gp, Ga, Wp, Wa, label)
+        self.lowPass.array[2].plotBode(F, Gp, Ga, Wp, Wa, label)
+        self.lowPass.array[3].plotAt(F, Wp, Wa, label)
+        self.lowPass.array[4].plotFase(F, Wp, Wa, label)
+        self.lowPass.array[5].plotAt(F, Wp, Wa, label)
+        self.lowPass.array[6].plotStepResp(F, label)
         self.lowPass.array[7].plotPolesZeroes(z, p, label)
         self.ventana.LowPassN.setText(str(N))
         self.lowPassData.pop(-1)
         self.lowPassData.append([Wp, Gp, Wa, Ga, N, label, fIndex])
 
     def plotHighPass(self):
-        Wp, Gp, Wa, Ga = self.getDataLowHigh(1)
-        print(Wp, Gp, Wa, Ga)
+        Wp, Gp, Wa, Ga, Nin, label, fIndex = self.highPassData[-1]
+        Wan = Wp / Wa
+        if self.ventana.HighPassCombo.currentIndex() == 0:
+            zn, pn, kn = butterNormalized(Wan, Gp, Ga, Nin)
+            z, p, k, N = butter(Wp, Wa, Gp, Ga, 'highpass', Nin)
+        elif self.ventana.HighPassCombo.currentIndex() == 1:
+            zn, pn, kn = chevyINormalized(Wan, Gp, Ga, Nin)
+            z, p, k, N = chevyI(Wp, Wa, Gp, Ga, 'highpass', Nin)
+        elif self.ventana.HighPassCombo.currentIndex() == 2:
+            zn, pn, kn = chevyIINormalized(Wan, Gp, Ga, Nin)
+            z, p, k, N = chevyII(Wp, Wa, Gp, Ga, 'highpass', Nin)
+        elif self.ventana.HighPassCombo.currentIndex() == 3:
+            zn, pn, kn = cauerNormalized(Wan, Gp, Ga, Nin)
+            z, p, k, N = cauer(Wp, Wa, Gp, Ga, 'highpass', Nin)
+        F = zpk2tf(z, p, k)
+        self.highPass.array[0].plotTemplate(zpk2tf(zn, pn, kn), Gp, Ga, Wan, label)
+        self.highPass.array[1].plotVeces(F, Gp, Ga, Wp, Wa, label)
+        self.highPass.array[2].plotBode(F, Gp, Ga, Wp, Wa, label)
+        self.highPass.array[3].plotAt(F, Wp, Wa, label)
+        self.highPass.array[4].plotFase(F, Wp, Wa, label)
+        self.highPass.array[5].plotAt(F, Wp, Wa, label)
+        self.highPass.array[6].plotStepResp(F, label)
+        self.highPass.array[7].plotPolesZeroes(z, p, label)
+        self.ventana.HighPassN.setText(str(N))
+        self.highPassData.pop(-1)
+        self.highPassData.append([Wp, Gp, Wa, Ga, N, label, fIndex])

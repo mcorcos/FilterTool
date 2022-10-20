@@ -142,7 +142,7 @@ selection-background-color: rgb(202, 237, 242);
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_2">
+          <widget class="QLabel" name="chau">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
              <horstretch>0</horstretch>
@@ -402,7 +402,7 @@ selection-background-color: rgb(202, 237, 242);
        <item>
         <widget class="QStackedWidget" name="LowPassStack">
          <property name="currentIndex">
-          <number>5</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="stackedWidget_1">
           <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -480,7 +480,21 @@ selection-background-color: rgb(202, 237, 242);
             <string notr="true"/>
            </property>
            <property name="text">
-            <string>PushButton</string>
+            <string>Generar Template</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="newHighPass">
+           <property name="text">
+            <string>Nueva Curva</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="highPassElim">
+           <property name="text">
+            <string>Eliminar</string>
            </property>
           </widget>
          </item>
@@ -489,7 +503,7 @@ selection-background-color: rgb(202, 237, 242);
            <property name="minimumSize">
             <size>
              <width>56</width>
-             <height>0</height>
+             <height>20</height>
             </size>
            </property>
            <property name="styleSheet">
@@ -714,7 +728,66 @@ selection-background-color: rgb(202, 237, 242);
           </widget>
          </item>
          <item>
-          <widget class="Line" name="line_6">
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>Label:</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="HighPassLabel">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>80</width>
+             <height>0</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="highPassList">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+           <item>
+            <property name="text">
+             <string>Nuevo filtro</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_15">
+           <item>
+            <widget class="QPushButton" name="LeftHighPass">
+             <property name="text">
+              <string>&lt;</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="RightHighPass">
+             <property name="text">
+              <string>&gt;</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="Line" name="line_3">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
@@ -755,12 +828,66 @@ selection-background-color: rgb(202, 237, 242);
         </widget>
        </item>
        <item>
-        <widget class="QStackedWidget" name="stackedWidget_3">
+        <widget class="QStackedWidget" name="HighPassStack">
          <property name="currentIndex">
-          <number>1</number>
+          <number>0</number>
          </property>
-         <widget class="QWidget" name="page_7"/>
-         <widget class="QWidget" name="page_8"/>
+         <widget class="QWidget" name="page_7">
+          <layout class="QHBoxLayout" name="horizontalLayout_16">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_3"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_8">
+          <layout class="QHBoxLayout" name="horizontalLayout_17">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_4"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_11">
+          <layout class="QHBoxLayout" name="horizontalLayout_18">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_7"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_12">
+          <layout class="QHBoxLayout" name="horizontalLayout_19">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_9"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_15">
+          <layout class="QHBoxLayout" name="horizontalLayout_20">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_11"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_16">
+          <layout class="QHBoxLayout" name="horizontalLayout_21">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_12"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_17">
+          <layout class="QHBoxLayout" name="horizontalLayout_22">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_13"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_18">
+          <layout class="QHBoxLayout" name="horizontalLayout_23">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_14"/>
+           </item>
+          </layout>
+         </widget>
         </widget>
        </item>
       </layout>
