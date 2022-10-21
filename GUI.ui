@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>634</width>
-    <height>428</height>
+    <width>636</width>
+    <height>450</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,7 +25,7 @@ color: rgb(185, 201, 221);
 border-color: rgb(7, 54, 66);</string>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="lowPassTab">
       <attribute name="title">
@@ -50,7 +50,7 @@ border-color: rgb(7, 54, 66);</string>
          <item>
           <widget class="QPushButton" name="newLowPass">
            <property name="text">
-            <string>Nueva Curva</string>
+            <string>Nueva curva</string>
            </property>
           </widget>
          </item>
@@ -480,14 +480,14 @@ selection-background-color: rgb(202, 237, 242);
             <string notr="true"/>
            </property>
            <property name="text">
-            <string>Generar Template</string>
+            <string>Generar template</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QPushButton" name="newHighPass">
            <property name="text">
-            <string>Nueva Curva</string>
+            <string>Nueva curva</string>
            </property>
           </widget>
          </item>
@@ -908,7 +908,21 @@ selection-background-color: rgb(202, 237, 242);
             <string notr="true"/>
            </property>
            <property name="text">
-            <string>PushButton</string>
+            <string>Generar template</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="newBandPass">
+           <property name="text">
+            <string>Nueva curva</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="bandPassElim">
+           <property name="text">
+            <string>Eliminar</string>
            </property>
           </widget>
          </item>
@@ -917,7 +931,7 @@ selection-background-color: rgb(202, 237, 242);
            <property name="minimumSize">
             <size>
              <width>56</width>
-             <height>0</height>
+             <height>20</height>
             </size>
            </property>
            <property name="styleSheet">
@@ -1116,7 +1130,7 @@ selection-background-color: rgb(202, 237, 242);
          <item>
           <widget class="QLineEdit" name="BandPassBa">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
@@ -1124,7 +1138,7 @@ selection-background-color: rgb(202, 237, 242);
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_25">
+          <widget class="QLabel" name="hola_2">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
              <horstretch>0</horstretch>
@@ -1162,11 +1176,64 @@ selection-background-color: rgb(202, 237, 242);
           </widget>
          </item>
          <item>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Label:</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="BandPassLabel">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="bandPassList">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+           <item>
+            <property name="text">
+             <string>Nuevo filtro</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
           <widget class="Line" name="line_8">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
           </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_24">
+           <item>
+            <widget class="QPushButton" name="LeftBandPass">
+             <property name="text">
+              <string>&lt;</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="RightBandPass">
+             <property name="text">
+              <string>&gt;</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
          <item>
           <spacer name="verticalSpacer_5">
@@ -1203,12 +1270,66 @@ selection-background-color: rgb(202, 237, 242);
         </widget>
        </item>
        <item>
-        <widget class="QStackedWidget" name="stackedWidget_4">
+        <widget class="QStackedWidget" name="BandPassStack">
          <property name="currentIndex">
-          <number>1</number>
+          <number>7</number>
          </property>
-         <widget class="QWidget" name="page_9"/>
-         <widget class="QWidget" name="page_10"/>
+         <widget class="QWidget" name="page_9">
+          <layout class="QHBoxLayout" name="horizontalLayout_32">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_21"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_19">
+          <layout class="QHBoxLayout" name="horizontalLayout_31">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_20"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_10">
+          <layout class="QHBoxLayout" name="horizontalLayout_30">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_19"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_20">
+          <layout class="QHBoxLayout" name="horizontalLayout_29">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_18"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_21">
+          <layout class="QHBoxLayout" name="horizontalLayout_28">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_17"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_22">
+          <layout class="QHBoxLayout" name="horizontalLayout_27">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_16"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_23">
+          <layout class="QHBoxLayout" name="horizontalLayout_26">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_15"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_24">
+          <layout class="QHBoxLayout" name="horizontalLayout_25">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_10"/>
+           </item>
+          </layout>
+         </widget>
         </widget>
        </item>
       </layout>

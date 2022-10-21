@@ -4,6 +4,7 @@ from filters import *
 from scipy.signal import zpk2tf
 from plotWidget import plotWidget
 from plots import plots
+import numpy as np
 
 class iniciar:
     def __init__(self):
@@ -12,23 +13,32 @@ class iniciar:
         self.ventana = uic.loadUi("GUI.ui")
         self.ventana.show()
 
+        """
         self.lowPass = plots('lowPass')
         self.createCanvas(self.lowPass)
         self.lowPassPage = 0
         self.lowPassData = []
+        """
 
         self.highPass = plots('highPass')
         self.createCanvas(self.highPass)
         self.highPassPage = 0
         self.highPassData = []
 
+        self.bandPass = plots('bandPass')
+        self.createCanvas(self.bandPass)
+        self.bandPassPage = 0
+        self.bandPassData = []
+
         self.rightButtons = QtWidgets.QButtonGroup()
         self.rightButtons.addButton(self.ventana.RightLowPass, 0)
         self.rightButtons.addButton(self.ventana.RightHighPass, 1)
+        self.rightButtons.addButton(self.ventana.RightBandPass, 2)
 
         self.leftButtons = QtWidgets.QButtonGroup()
         self.leftButtons.addButton(self.ventana.LeftLowPass, 0)
         self.leftButtons.addButton(self.ventana.LeftHighPass, 1)
+        self.leftButtons.addButton(self.ventana.LeftBandPass, 2)
 
         self.rightButtons.buttonClicked.connect(self.nextPage)
         self.leftButtons.buttonClicked.connect(self.prevPage)
@@ -45,11 +55,15 @@ class iniciar:
 
         self.deleteButtons = QtWidgets.QButtonGroup()
         self.deleteButtons.addButton(self.ventana.lowPassElim, 0)
+        self.deleteButtons.addButton(self.ventana.highPassElim, 1)
+        self.deleteButtons.addButton(self.ventana.bandPassElim, 2)
 
         self.deleteButtons.buttonClicked.connect(self.deleteAll)
 
         self.newButtons = QtWidgets.QButtonGroup()
         self.newButtons.addButton(self.ventana.newLowPass, 0)
+        self.newButtons.addButton(self.ventana.newHighPass, 1)
+        self.newButtons.addButton(self.ventana.newBandPass, 2)
 
         self.newButtons.buttonClicked.connect(self.getDataLowHigh)
         self.newButtons.buttonClicked.connect(self.plotAll)
@@ -71,6 +85,11 @@ class iniciar:
                 layout.addWidget(plot.array[i].navToolBar)
                 layout.addWidget(plot.array[i].canvas)
                 i = i - 1
+        if plot.type == 'bandPass':
+            for layout in self.ventana.BandPassStack.findChildren(QVBoxLayout):
+                layout.addWidget(plot.array[i].navToolBar)
+                layout.addWidget(plot.array[i].canvas)
+                i = i - 1
 
 
     def nextPage(self):
@@ -81,6 +100,10 @@ class iniciar:
         if index == 1:
             self.highPassPage = self.highPassPage + 1
             self.ventana.HighPassStack.setCurrentIndex(self.highPassPage)
+        if index == 2:
+            self.bandPassPage = self.bandPassPage + 1
+            self.ventana.BandPassStack.setCurrentIndex(self.bandPassPage)
+            print(self.ventana.BandPassStack.currentIndex())
 
     def prevPage(self):
         index = self.ventana.filterTabs.currentIndex()
@@ -90,6 +113,10 @@ class iniciar:
         if index == 1:
             self.highPassPage = self.highPassPage - 1
             self.ventana.HighPassStack.setCurrentIndex(self.highPassPage)
+        if index == 2:
+            self.bandPassPage = self.bandPassPage - 1
+            self.ventana.BandPassStack.setCurrentIndex(self.bandPassPage)
+            print(self.ventana.BandPassStack.currentIndex())
 
     def plotAll(self):
         index = self.ventana.filterTabs.currentIndex()
@@ -99,6 +126,9 @@ class iniciar:
         elif index == 1:
             self.plotHighPass()
             self.ventana.highPassList.addItem(self.ventana.HighPassLabel.text())
+        elif index == 2:
+            self.plotBandPass()
+
 
     def deleteAll(self):
         index = self.ventana.filterTabs.currentIndex()
@@ -115,7 +145,6 @@ class iniciar:
             self.lowPassData.pop(self.ventana.lowPassList.currentIndex() - 1)
             self.ventana.lowPassList.removeItem(self.ventana.lowPassList.currentIndex())
         elif index == 1:
-            print(1)
             for i in range(len(self.highPass.array)):
                 if i != 7:
                     self.highPass.array[i].ax.lines.pop(self.ventana.highPassList.currentIndex() - 1)
@@ -177,19 +206,49 @@ class iniciar:
                 N = 0
             N = int(N)
             self.highPassData.append([Wp, Gp, Wa, Ga, N, label, fIndex])
+        if index == 2:
+            Wo = self.ventana.BandPassWo.text()
+            if not Wo:
+                Wo = 0
+            Wo = float(Wo)
+            Wc = self.ventana.BandPassBp.text().split(', ')
+            wcP = float(Wc[1])
+            wcN = float(Wc[0])
+            Gp = float(self.ventana.BandPassGp.text())
+            Wa = self.ventana.BandPassBa.text().split(', ')
+            waP = float(Wa[1])
+            waN = float(Wa[0])
+            Ga = float(self.ventana.BandPassGa.text())
+            N = self.ventana.BandPassN.text()
+            label = self.ventana.BandPassLabel.text()
+            fIndex = self.ventana.BandPassCombo.currentIndex()
+            if not N:
+                N = 0
+            N = int(N)
+            self.bandPassData.append([wcN, wcP, Gp, waN, waP, Ga, N, label, fIndex])
+
+    def getDataBand(self):
+        index = self.ventana.filterTabs.currentIndex()
 
 
     def template(self):
         if self.ventana.filterTabs.currentIndex() == 0:
             Wp, Gp, Wa, Ga, Nin, label, fIndex = self.lowPassData[-1]
-            [p.remove() for p in reversed(self.lowPass.array[0].ax.patches)]
+            for i in range(len(self.lowPass.array)):
+                [p.remove() for p in reversed(self.lowPass.array[i].ax.patches)]
             Wan = Wa / Wp
             self.lowPass.array[0].patchLowPass(Gp, Ga, 1, Wan)
             self.lowPass.array[1].patchLowPass(Gp, Ga, Wp, Wa)
             self.lowPass.array[2].patchLowPassBode(Gp, Ga, Wp, Wa)
             self.lowPass.array[3].patchLowPassAt(Gp, Ga, Wp, Wa)
-        else:
-            print('hola')
+        if self.ventana.filterTabs.currentIndex() == 1:
+            Wp, Gp, Wa, Ga, Nin, label, fIndex = self.highPassData[-1]
+            for i in range(len(self.highPass.array)):
+                [p.remove() for p in reversed(self.highPass.array[i].ax.patches)]
+            Wan = Wp / Wa
+            self.highPass.array[0].patchLowPass(Gp, Ga, 1, Wan)
+            self.highPass.array[1].patchHighPass(Gp, Ga, Wp, Wa)
+            self.highPass.array[3].patchHighPassAt(Gp, Ga, Wp, Wa)
 
     def plotLowPass(self):
         Wp, Gp, Wa, Ga, Nin, label, fIndex = self.lowPassData[-1]
@@ -246,3 +305,42 @@ class iniciar:
         self.ventana.HighPassN.setText(str(N))
         self.highPassData.pop(-1)
         self.highPassData.append([Wp, Gp, Wa, Ga, N, label, fIndex])
+
+    def plotBandPass(self):
+        wcN, wcP, Gp, waN, waP, Ga, Nin, label, fIndex = self.bandPassData[-1]
+        Wan = (waP-waN) / (wcP-wcN)
+        Wp = [wcN, wcP]
+        Wa = [waN, waP]
+        print(1)
+        if self.ventana.BandPassCombo.currentIndex() == 0:
+            zn, pn, kn = butterNormalized(Wan, Gp, Ga, Nin)
+            z, p, k, N = butter(Wp, Wa, Gp, Ga, 'bandpass', Nin)
+        elif self.ventana.BandPassCombo.currentIndex() == 1:
+            zn, pn, kn = chevyINormalized(Wan, Gp, Ga, Nin)
+            z, p, k, N = chevyI(Wp, Wa, Gp, Ga, 'bandpass', Nin)
+        elif self.ventana.BandPassCombo.currentIndex() == 2:
+            zn, pn, kn = chevyIINormalized(Wan, Gp, Ga, Nin)
+            z, p, k, N = chevyII(Wp, Wa, Gp, Ga, 'bandpass', Nin)
+        elif self.ventana.BandPassCombo.currentIndex() == 3:
+            zn, pn, kn = cauerNormalized(Wan, Gp, Ga, Nin)
+            z, p, k, N = cauer(Wp, Wa, Gp, Ga, 'bandpass', Nin)
+        print(2)
+        F = zpk2tf(z, p, k)
+        print(3)
+        self.bandPass.array[0].plotTemplate(zpk2tf(zn, pn, kn), Gp, Ga, Wan, label)
+        print(4)
+        self.bandPass.array[1].plotVecesBand(F, Gp, Ga, Wp, Wa, label)
+        print(5)
+        #self.bandPass.array[2].plotBode(F, Gp, Ga, Wp, Wa, label)
+        print(6)
+        #self.bandPass.array[3].plotAt(F, Wp, Wa, label)
+        print(7)
+        #self.bandPass.array[4].plotFase(F, Wp, Wa, label)
+        print(8)
+        #self.bandPass.array[5].plotAt(F, Wp, Wa, label)
+        #self.bandPass.array[6].plotStepResp(F, label)
+        #self.bandPass.array[7].plotPolesZeroes(z, p, label)
+
+        self.ventana.BandPassN.setText(str(N))
+        self.bandPassData.pop(-1)
+        self.bandPassData.append([Wp, Gp, Wa, Ga, N, label, fIndex])

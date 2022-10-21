@@ -26,6 +26,11 @@ class plotWidget():
         self.ax.add_patch(Rectangle((wa, 0), 10 ** orderOfMagnitude(wa), Ga, facecolor='red', alpha=0.2))
         self.canvas.show()
 
+    def patchHighPass(self, Gp, Ga, wc, wa):
+        self.ax.add_patch(Rectangle((wc, 1),10 ** orderOfMagnitude(wc) , -(1 - Gp), facecolor='green', alpha=0.2))
+        self.ax.add_patch(Rectangle((0, 0), wa, Ga, facecolor='red', alpha=0.2))
+        self.canvas.show()
+
     def patchLowPassBode(self, Gp, Ga, wc, wa):
         self.ax.add_patch(Rectangle((0, dB(1)), wc, dB(Gp), facecolor='green', alpha=0.2))
         self.ax.add_patch(Rectangle((wa, dB(Ga)), 10 ** orderOfMagnitude(wa), -20, facecolor='red', alpha=0.2))
@@ -34,6 +39,11 @@ class plotWidget():
     def patchLowPassAt(self,  Gp, Ga, wc, wa):
         self.ax.add_patch(Rectangle((0, -dB(Gp)), wc, 300, facecolor='green', alpha=0.2))
         self.ax.add_patch(Rectangle((wa, 0), 10 ** (orderOfMagnitude(wa)+1), -dB(Ga), facecolor='red', alpha=0.2))
+        self.canvas.show()
+
+    def patchHighPassAt(self, Gp, Ga, wc, wa):
+        self.ax.add_patch(Rectangle((wc, -dB(Gp)), 10 ** (orderOfMagnitude(wc) + 1), 300, facecolor='green', alpha=0.2))
+        self.ax.add_patch(Rectangle((0, 0), wa, -dB(Ga), facecolor='red', alpha=0.2))
         self.canvas.show()
 
     def plotTemplate(self, F, Gp, Ga, wa, labeltxt):
@@ -47,6 +57,16 @@ class plotWidget():
     def plotVeces(self, F, Gp, Ga, wc, wa, labeltxt):
         wm = max(wa, wc)
         wp, m, p = signal.bode(F, np.linspace(0, (wm) + 10 ** orderOfMagnitude(wm), 1000 + 10 ** orderOfMagnitude(wm)))
+        fig, ax = plt.subplots()
+        self.ax.plot(wp, 10 ** (m / 20), label=labeltxt)
+        self.ax.grid()
+        self.ax.legend()
+        self.canvas.show()
+
+    def plotVecesBand(self, F, Gp, Ga, wc, wa, labeltxt):
+        wm = max(wa[0], wc[0], wa[1], wc[0])
+        wn = min(wa[0], wc[0], wa[1], wc[0])
+        wp, m, p = signal.bode(F, np.linspace(wn - 10 ** orderOfMagnitude(wn), (wm) + 10 ** orderOfMagnitude(wm), 1000 + 10 ** orderOfMagnitude(wm)))
         fig, ax = plt.subplots()
         self.ax.plot(wp, 10 ** (m / 20), label=labeltxt)
         self.ax.grid()
