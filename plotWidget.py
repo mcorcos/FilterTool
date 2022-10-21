@@ -82,6 +82,15 @@ class plotWidget():
         self.ax.legend()
         self.canvas.show()
 
+    def plotBodeBand(self, F, Gp, Ga, wc, wa, labeltxt):
+        wm = max(wa[0], wa[1], wc[0], wc[1])
+        wn = min(wa[0], wa[1], wc[0], wc[1])
+        wp, m, p = signal.bode(F, np.logspace(orderOfMagnitude(wn) - 1, 1 + orderOfMagnitude(wm), 1000 + 10 ** orderOfMagnitude(wm)))
+        self.ax.semilogx(wp, m, label=labeltxt)
+        self.ax.grid('log')
+        self.ax.legend()
+        self.canvas.show()
+
     def plotAt(self, F, wc, wa, labeltxt):
         wm = max(wa, wc)
         wn = min(wa, wc)
@@ -90,6 +99,16 @@ class plotWidget():
         self.ax.grid('log')
         self.ax.legend()
         self.canvas.show()
+
+    def plotAtBand(self, F, wc, wa, labeltxt):
+        wm = max(wa[0], wa[1], wc[0], wc[1])
+        wn = min(wa[0], wa[1], wc[0], wc[1])
+        wp, m, p = signal.bode(F, np.logspace(orderOfMagnitude(wn) - 1, 1 + orderOfMagnitude(wm), 1000 + 10 ** orderOfMagnitude(wm)))
+        self.ax.semilogx(wp, -m, label=labeltxt)
+        self.ax.grid('log')
+        self.ax.legend()
+        self.canvas.show()
+
 
     def plotFase(self, F, wc, wa, labeltxt):
         wm = max(wa, wc)
@@ -100,6 +119,17 @@ class plotWidget():
         self.ax.grid('log')
         self.ax.legend()
         self.canvas.show()
+
+    def plotFaseBand(self, F, wc, wa, labeltxt):
+        wm = max(wa[0], wa[1], wc[0], wc[1])
+        wn = min(wa[0], wa[1], wc[0], wc[1])
+        wp, m, p = signal.bode(F, np.logspace(orderOfMagnitude(wn) - 1, 1 + orderOfMagnitude(wm),
+                                              1000 + 10 ** orderOfMagnitude(wm)))
+        self.ax.semilogx(wp, p, label=labeltxt)
+        self.ax.grid('log')
+        self.ax.legend()
+        self.canvas.show()
+
 
     def plotStepResp(self, F, labeltxt):
         t, y = signal.step(F, N=1000)

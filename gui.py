@@ -13,12 +13,10 @@ class iniciar:
         self.ventana = uic.loadUi("GUI.ui")
         self.ventana.show()
 
-        """
         self.lowPass = plots('lowPass')
         self.createCanvas(self.lowPass)
         self.lowPassPage = 0
         self.lowPassData = []
-        """
 
         self.highPass = plots('highPass')
         self.createCanvas(self.highPass)
@@ -30,15 +28,22 @@ class iniciar:
         self.bandPassPage = 0
         self.bandPassData = []
 
+        self.bandReject = plots('bandReject')
+        self.createCanvas(self.bandReject)
+        self.bandRejectPage = 0
+        self.bandRejectData = []
+
         self.rightButtons = QtWidgets.QButtonGroup()
         self.rightButtons.addButton(self.ventana.RightLowPass, 0)
         self.rightButtons.addButton(self.ventana.RightHighPass, 1)
         self.rightButtons.addButton(self.ventana.RightBandPass, 2)
+        self.rightButtons.addButton(self.ventana.RightBandReject, 3)
 
         self.leftButtons = QtWidgets.QButtonGroup()
         self.leftButtons.addButton(self.ventana.LeftLowPass, 0)
         self.leftButtons.addButton(self.ventana.LeftHighPass, 1)
         self.leftButtons.addButton(self.ventana.LeftBandPass, 2)
+        self.leftButtons.addButton(self.ventana.LeftBandReject, 3)
 
         self.rightButtons.buttonClicked.connect(self.nextPage)
         self.leftButtons.buttonClicked.connect(self.prevPage)
@@ -57,6 +62,7 @@ class iniciar:
         self.deleteButtons.addButton(self.ventana.lowPassElim, 0)
         self.deleteButtons.addButton(self.ventana.highPassElim, 1)
         self.deleteButtons.addButton(self.ventana.bandPassElim, 2)
+        self.deleteButtons.addButton(self.ventana.bandRejectElim, 3)
 
         self.deleteButtons.buttonClicked.connect(self.deleteAll)
 
@@ -64,12 +70,15 @@ class iniciar:
         self.newButtons.addButton(self.ventana.newLowPass, 0)
         self.newButtons.addButton(self.ventana.newHighPass, 1)
         self.newButtons.addButton(self.ventana.newBandPass, 2)
+        self.newButtons.addButton(self.ventana.newBandReject, 3)
 
         self.newButtons.buttonClicked.connect(self.getDataLowHigh)
         self.newButtons.buttonClicked.connect(self.plotAll)
 
         self.ventana.lowPassList.currentIndexChanged.connect(self.showDataLP)
         self.ventana.highPassList.currentIndexChanged.connect(self.showDataHP)
+        self.ventana.bandPassList.currentIndexChanged.connect(self.showDataBP)
+        self.ventana.bandRejectList.currentIndexChanged.connect(self.showDataBR)
 
         app.exec()
 
@@ -90,6 +99,11 @@ class iniciar:
                 layout.addWidget(plot.array[i].navToolBar)
                 layout.addWidget(plot.array[i].canvas)
                 i = i - 1
+        if plot.type == 'bandReject':
+            for layout in self.ventana.BandRejectStack.findChildren(QVBoxLayout):
+                layout.addWidget(plot.array[i].navToolBar)
+                layout.addWidget(plot.array[i].canvas)
+                i = i - 1
 
 
     def nextPage(self):
@@ -103,7 +117,10 @@ class iniciar:
         if index == 2:
             self.bandPassPage = self.bandPassPage + 1
             self.ventana.BandPassStack.setCurrentIndex(self.bandPassPage)
-            print(self.ventana.BandPassStack.currentIndex())
+        if index == 3:
+            self.bandRejectPage = self.bandRejectPage + 1
+            self.ventana.BandRejectStack.setCurrentIndex(self.bandRejectPage)
+
 
     def prevPage(self):
         index = self.ventana.filterTabs.currentIndex()
@@ -116,7 +133,9 @@ class iniciar:
         if index == 2:
             self.bandPassPage = self.bandPassPage - 1
             self.ventana.BandPassStack.setCurrentIndex(self.bandPassPage)
-            print(self.ventana.BandPassStack.currentIndex())
+        if index == 3:
+            self.bandRejectPage = self.bandRejectPage - 1
+            self.ventana.BandRejectStack.setCurrentIndex(self.bandRejectPage)
 
     def plotAll(self):
         index = self.ventana.filterTabs.currentIndex()
@@ -128,6 +147,10 @@ class iniciar:
             self.ventana.highPassList.addItem(self.ventana.HighPassLabel.text())
         elif index == 2:
             self.plotBandPass()
+            self.ventana.bandPassList.addItem(self.ventana.BandPassLabel.text())
+        elif index == 3:
+            self.plotBandReject()
+            self.ventana.bandRejectList.addItem(self.ventana.BandRejectLabel.text())
 
 
     def deleteAll(self):
@@ -156,6 +179,31 @@ class iniciar:
                 self.highPass.array[i].ax.legend()
             self.highPassData.pop(self.ventana.highPassList.currentIndex() - 1)
             self.ventana.highPassList.removeItem(self.ventana.highPassList.currentIndex())
+        elif index == 2:
+            for i in range(len(self.bandPass.array)):
+                if i != 7:
+                    self.bandPass.array[i].ax.lines.pop(self.ventana.bandPassList.currentIndex() - 1)
+                else:
+                    self.bandPass.array[i].scatterPoles[self.ventana.bandPassList.currentIndex() - 1].remove()
+                    self.bandPass.array[i].scatterPoles.pop(self.ventana.bandPassList.currentIndex() - 1)
+                    self.bandPass.array[i].scatterZeroes[self.ventana.bandPassList.currentIndex() - 1].remove()
+                    self.bandPass.array[i].scatterZeroes.pop(self.ventana.bandPassList.currentIndex() - 1)
+                self.bandPass.array[i].ax.legend()
+            self.bandPassData.pop(self.ventana.bandPassList.currentIndex() - 1)
+            self.ventana.bandPassList.removeItem(self.ventana.bandPassList.currentIndex())
+        elif index == 3:
+            for i in range(len(self.bandReject.array)):
+                if i != 7:
+                    self.bandReject.array[i].ax.lines.pop(self.ventana.bandRejectList.currentIndex() - 1)
+                else:
+                    self.bandReject.array[i].scatterPoles[self.ventana.bandRejectList.currentIndex() - 1].remove()
+                    self.bandReject.array[i].scatterPoles.pop(self.ventana.bandRejectList.currentIndex() - 1)
+                    self.bandReject.array[i].scatterZeroes[self.ventana.bandRejectList.currentIndex() - 1].remove()
+                    self.bandReject.array[i].scatterZeroes.pop(self.ventana.bandRejectList.currentIndex() - 1)
+                self.bandReject.array[i].ax.legend()
+            self.bandRejectData.pop(self.ventana.bandRejectList.currentIndex() - 1)
+            self.ventana.bandRejectList.removeItem(self.ventana.bandRejectList.currentIndex())
+
 
 
     def showDataLP(self, index):
@@ -179,6 +227,33 @@ class iniciar:
             self.ventana.HighPassN.setText(str(N))
             self.ventana.HighPassLabel.setText(label)
             self.ventana.HighPassCombo.setCurrentIndex(fIndex)
+
+    def showDataBP(self, index):
+        if index != 0:
+            wcN, wcP, Gp, waN, waP, Ga, N, label, fIndex = self.bandPassData[index - 1]
+            Wp = [wcN, wcP]
+            Wa = [waN, waP]
+            self.ventana.BandPassBp.setText(str(Wp))
+            self.ventana.BandPassBa.setText(str(Wa))
+            self.ventana.BandPassGp.setText(str(Gp))
+            self.ventana.BandPassGa.setText(str(Ga))
+            self.ventana.BandPassN.setText(str(N))
+            self.ventana.BandPassLabel.setText(label)
+            self.ventana.BandPassCombo.setCurrentIndex(fIndex)
+
+    def showDataBR(self, index):
+        if index != 0:
+            wcN, wcP, Gp, waN, waP, Ga, N, label, fIndex = self.bandRejectData[index - 1]
+            Wp = [wcN, wcP]
+            Wa = [waN, waP]
+            self.ventana.BandRejectBp.setText(str(Wp))
+            self.ventana.BandRejectBa.setText(str(Wa))
+            self.ventana.BandRejectGp.setText(str(Gp))
+            self.ventana.BandRejectGa.setText(str(Ga))
+            self.ventana.BandRejectN.setText(str(N))
+            self.ventana.BandRejectLabel.setText(label)
+            self.ventana.BandRejectCombo.setCurrentIndex(fIndex)
+
 
     def getDataLowHigh(self):
         index = self.ventana.filterTabs.currentIndex()
@@ -206,7 +281,7 @@ class iniciar:
                 N = 0
             N = int(N)
             self.highPassData.append([Wp, Gp, Wa, Ga, N, label, fIndex])
-        if index == 2:
+        elif index == 2:
             Wo = self.ventana.BandPassWo.text()
             if not Wo:
                 Wo = 0
@@ -226,10 +301,26 @@ class iniciar:
                 N = 0
             N = int(N)
             self.bandPassData.append([wcN, wcP, Gp, waN, waP, Ga, N, label, fIndex])
-
-    def getDataBand(self):
-        index = self.ventana.filterTabs.currentIndex()
-
+        elif index == 3:
+            Wo = self.ventana.BandRejectWo.text()
+            if not Wo:
+                Wo = 0
+            Wo = float(Wo)
+            Wc = self.ventana.BandRejectBp.text().split(', ')
+            wcP = float(Wc[1])
+            wcN = float(Wc[0])
+            Gp = float(self.ventana.BandRejectGp.text())
+            Wa = self.ventana.BandRejectBa.text().split(', ')
+            waP = float(Wa[1])
+            waN = float(Wa[0])
+            Ga = float(self.ventana.BandRejectGa.text())
+            N = self.ventana.BandRejectN.text()
+            label = self.ventana.BandRejectLabel.text()
+            fIndex = self.ventana.BandRejectCombo.currentIndex()
+            if not N:
+                N = 0
+            N = int(N)
+            self.bandRejectData.append([wcN, wcP, Gp, waN, waP, Ga, N, label, fIndex])
 
     def template(self):
         if self.ventana.filterTabs.currentIndex() == 0:
@@ -311,7 +402,6 @@ class iniciar:
         Wan = (waP-waN) / (wcP-wcN)
         Wp = [wcN, wcP]
         Wa = [waN, waP]
-        print(1)
         if self.ventana.BandPassCombo.currentIndex() == 0:
             zn, pn, kn = butterNormalized(Wan, Gp, Ga, Nin)
             z, p, k, N = butter(Wp, Wa, Gp, Ga, 'bandpass', Nin)
@@ -324,23 +414,45 @@ class iniciar:
         elif self.ventana.BandPassCombo.currentIndex() == 3:
             zn, pn, kn = cauerNormalized(Wan, Gp, Ga, Nin)
             z, p, k, N = cauer(Wp, Wa, Gp, Ga, 'bandpass', Nin)
-        print(2)
         F = zpk2tf(z, p, k)
-        print(3)
         self.bandPass.array[0].plotTemplate(zpk2tf(zn, pn, kn), Gp, Ga, Wan, label)
-        print(4)
         self.bandPass.array[1].plotVecesBand(F, Gp, Ga, Wp, Wa, label)
-        print(5)
-        #self.bandPass.array[2].plotBode(F, Gp, Ga, Wp, Wa, label)
-        print(6)
-        #self.bandPass.array[3].plotAt(F, Wp, Wa, label)
-        print(7)
-        #self.bandPass.array[4].plotFase(F, Wp, Wa, label)
-        print(8)
-        #self.bandPass.array[5].plotAt(F, Wp, Wa, label)
-        #self.bandPass.array[6].plotStepResp(F, label)
-        #self.bandPass.array[7].plotPolesZeroes(z, p, label)
-
+        self.bandPass.array[2].plotBodeBand(F, Gp, Ga, Wp, Wa, label)
+        self.bandPass.array[3].plotAtBand(F, Wp, Wa, label)
+        self.bandPass.array[4].plotFaseBand(F, Wp, Wa, label)
+        self.bandPass.array[5].plotAtBand(F, Wp, Wa, label)
+        self.bandPass.array[6].plotStepResp(F, label)
+        self.bandPass.array[7].plotPolesZeroes(z, p, label)
         self.ventana.BandPassN.setText(str(N))
         self.bandPassData.pop(-1)
-        self.bandPassData.append([Wp, Gp, Wa, Ga, N, label, fIndex])
+        self.bandPassData.append([wcN, wcP, Gp, waN, waP, Ga, N, label, fIndex])
+
+    def plotBandReject(self):
+        wcN, wcP, Gp, waN, waP, Ga, Nin, label, fIndex = self.bandRejectData[-1]
+        Wan = (wcP-wcN) / (waP-waN)
+        Wp = [wcN, wcP]
+        Wa = [waN, waP]
+        if self.ventana.BandRejectCombo.currentIndex() == 0:
+            zn, pn, kn = butterNormalized(Wan, Gp, Ga, Nin)
+            z, p, k, N = butter(Wp, Wa, Gp, Ga, 'bandstop', Nin)
+        elif self.ventana.BandRejectCombo.currentIndex() == 1:
+            zn, pn, kn = chevyINormalized(Wan, Gp, Ga, Nin)
+            z, p, k, N = chevyI(Wp, Wa, Gp, Ga, 'bandstop', Nin)
+        elif self.ventana.BandRejectCombo.currentIndex() == 2:
+            zn, pn, kn = chevyIINormalized(Wan, Gp, Ga, Nin)
+            z, p, k, N = chevyII(Wp, Wa, Gp, Ga, 'bandstop', Nin)
+        elif self.ventana.BandRejectCombo.currentIndex() == 3:
+            zn, pn, kn = cauerNormalized(Wan, Gp, Ga, Nin)
+            z, p, k, N = cauer(Wp, Wa, Gp, Ga, 'bandstop', Nin)
+        F = zpk2tf(z, p, k)
+        self.bandReject.array[0].plotTemplate(zpk2tf(zn, pn, kn), Gp, Ga, Wan, label)
+        self.bandReject.array[1].plotVecesBand(F, Gp, Ga, Wp, Wa, label)
+        self.bandReject.array[2].plotBodeBand(F, Gp, Ga, Wp, Wa, label)
+        self.bandReject.array[3].plotAtBand(F, Wp, Wa, label)
+        self.bandReject.array[4].plotFaseBand(F, Wp, Wa, label)
+        self.bandReject.array[5].plotAtBand(F, Wp, Wa, label)
+        self.bandReject.array[6].plotStepResp(F, label)
+        self.bandReject.array[7].plotPolesZeroes(z, p, label)
+        self.ventana.BandRejectN.setText(str(N))
+        self.bandRejectData.pop(-1)
+        self.bandRejectData.append([wcN, wcP, Gp, waN, waP, Ga, N, label, fIndex])

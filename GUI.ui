@@ -6,9 +6,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>636</width>
-    <height>450</height>
+    <width>618</width>
+    <height>464</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>20</width>
+    <height>0</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Form</string>
@@ -25,7 +37,7 @@ color: rgb(185, 201, 221);
 border-color: rgb(7, 54, 66);</string>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="lowPassTab">
       <attribute name="title">
@@ -341,6 +353,13 @@ selection-background-color: rgb(202, 237, 242);
           </widget>
          </item>
          <item>
+          <widget class="Line" name="line_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
           <layout class="QHBoxLayout" name="horizontalLayout_8">
            <item>
             <widget class="QPushButton" name="LeftLowPass">
@@ -357,13 +376,6 @@ selection-background-color: rgb(202, 237, 242);
             </widget>
            </item>
           </layout>
-         </item>
-         <item>
-          <widget class="Line" name="line_2">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-          </widget>
          </item>
          <item>
           <spacer name="verticalSpacer">
@@ -769,6 +781,13 @@ selection-background-color: rgb(202, 237, 242);
           </widget>
          </item>
          <item>
+          <widget class="Line" name="line_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
           <layout class="QHBoxLayout" name="horizontalLayout_15">
            <item>
             <widget class="QPushButton" name="LeftHighPass">
@@ -785,13 +804,6 @@ selection-background-color: rgb(202, 237, 242);
             </widget>
            </item>
           </layout>
-         </item>
-         <item>
-          <widget class="Line" name="line_3">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-          </widget>
          </item>
          <item>
           <spacer name="verticalSpacer_4">
@@ -1042,7 +1054,7 @@ selection-background-color: rgb(202, 237, 242);
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_23">
+          <widget class="QLabel" name="aaaaaa">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
              <horstretch>0</horstretch>
@@ -1236,6 +1248,13 @@ selection-background-color: rgb(202, 237, 242);
           </layout>
          </item>
          <item>
+          <widget class="QCheckBox" name="checkBox">
+           <property name="text">
+            <string>Ancho de Banda</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <spacer name="verticalSpacer_5">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
@@ -1350,16 +1369,36 @@ selection-background-color: rgb(202, 237, 242);
             <string notr="true"/>
            </property>
            <property name="text">
-            <string>PushButton</string>
+            <string>Generar template</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="newBandReject">
+           <property name="text">
+            <string>Nueva curva</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="bandRejectElim">
+           <property name="text">
+            <string>Eliminar</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QComboBox" name="BandRejectCombo">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>20</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="minimumSize">
             <size>
              <width>56</width>
-             <height>0</height>
+             <height>20</height>
             </size>
            </property>
            <property name="styleSheet">
@@ -1556,12 +1595,18 @@ selection-background-color: rgb(202, 237, 242);
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="BandRejectGa_2">
+          <widget class="QLineEdit" name="BandRejectBa">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
            </property>
           </widget>
          </item>
@@ -1604,9 +1649,75 @@ selection-background-color: rgb(202, 237, 242);
           </widget>
          </item>
          <item>
+          <widget class="QLabel" name="label_8">
+           <property name="text">
+            <string>Label:</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="BandRejectLabel">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="bandRejectList">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>20</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+           <item>
+            <property name="text">
+             <string>Nuevo filtro</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
           <widget class="Line" name="line_12">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_33">
+           <item>
+            <widget class="QPushButton" name="LeftBandReject">
+             <property name="text">
+              <string>&lt;</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="RightBandReject">
+             <property name="text">
+              <string>&gt;</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_2">
+           <property name="text">
+            <string>Ancho de Banda</string>
            </property>
           </widget>
          </item>
@@ -1645,12 +1756,66 @@ selection-background-color: rgb(202, 237, 242);
         </widget>
        </item>
        <item>
-        <widget class="QStackedWidget" name="stackedWidget_5">
+        <widget class="QStackedWidget" name="BandRejectStack">
          <property name="currentIndex">
-          <number>1</number>
+          <number>4</number>
          </property>
-         <widget class="QWidget" name="page_13"/>
-         <widget class="QWidget" name="page_14"/>
+         <widget class="QWidget" name="page_13">
+          <layout class="QHBoxLayout" name="horizontalLayout_41">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_29"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_14">
+          <layout class="QHBoxLayout" name="horizontalLayout_40">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_28"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_25">
+          <layout class="QHBoxLayout" name="horizontalLayout_39">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_27"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_26">
+          <layout class="QHBoxLayout" name="horizontalLayout_38">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_26"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_27">
+          <layout class="QHBoxLayout" name="horizontalLayout_37">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_25"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_28">
+          <layout class="QHBoxLayout" name="horizontalLayout_36">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_24"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_29">
+          <layout class="QHBoxLayout" name="horizontalLayout_35">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_23"/>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="page_30">
+          <layout class="QHBoxLayout" name="horizontalLayout_34">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_22"/>
+           </item>
+          </layout>
+         </widget>
         </widget>
        </item>
       </layout>
