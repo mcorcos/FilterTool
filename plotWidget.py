@@ -130,51 +130,12 @@ class plotWidget():
         self.ax.legend()
         self.canvas.show()
 
-
     def plotStepResp(self, F, labeltxt):
         t, y = signal.step(F, N=1000)
         self.ax.plot(t, y, label=labeltxt)
         self.ax.grid()
         self.ax.legend()
         self.canvas.show()
-
-    def plotBandPass(self, F, Gp, Ga, wcmin, wcmax, wamin, wamax, gain='veces'):
-        wp, m, p = signal.bode(F, np.linspace(0, (wamax) + 10 ** orderOfMagnitude(wamax),
-                                              1000 + 10 ** orderOfMagnitude(wamax)))
-        fig, ax = plt.subplots(figsize=(10, 8))
-        if gain == 'veces':
-            ax.plot(wp, 10 ** (m / 20), label='Algún polinomio')
-            ax.add_patch(Rectangle((0, 0), wamin, Ga, facecolor='red', alpha=0.2))
-            ax.add_patch(Rectangle((wamax, 0), 10 ** orderOfMagnitude(wamax), Ga, facecolor='red', alpha=0.2))
-            ax.add_patch(Rectangle((wcmin, 1), wcmax, -(1 - Gp), facecolor='green', alpha=0.2))
-        elif gain == 'dB':
-            ax.semilogx(wp, m, label='Algún polinomio')
-            # ax.add_patch(Rectangle((0, 0), wamin, Ga, facecolor='red', alpha=0.2))
-            # ax.add_patch(Rectangle((wamax, 0), 10 ** orderOfMagnitude(wamax), Ga, facecolor='red', alpha=0.2))
-            # ax.add_patch(Rectangle((wcmin, 1), wcmax, -(1 - Gp), facecolor='green', alpha=0.2))
-        # plt.xlim([0, wc + 1 + 10 ** _orderOfMagnitude(wc)])
-        # plt.ylim([0, 1.1])
-        plt.show()
-
-
-
-    def plotBandReject(self, F, Gp, Ga, wcmin, wcmax, wamin, wamax, gain='veces'):
-        wp, m, p = signal.bode(F, np.linspace(0, (wcmax) + 10 ** orderOfMagnitude(wcmax),
-                                              1000 + 10 ** orderOfMagnitude(wcmax)))
-        fig, ax = plt.subplots(figsize=(10, 8))
-        if gain == 'veces':
-            ax.plot(wp, 10 ** (m / 20), label='Algún polinomio')
-            ax.add_patch(Rectangle((0, 1), wcmin, -(1 - Gp), facecolor='green', alpha=0.2))
-            ax.add_patch(Rectangle((wamin, 0), wamax, Ga, facecolor='red', alpha=0.2))
-            ax.add_patch(Rectangle((wcmax, 1), 10 ** orderOfMagnitude(wcmax), -(1 - Gp), facecolor='green', alpha=0.2))
-        elif gain == 'dB':
-            ax.semilogx(wp, m, label='Algún polinomio')
-            # ax.add_patch(Rectangle((0, 0), wamin, Ga, facecolor='red', alpha=0.2))
-            # ax.add_patch(Rectangle((wamax, 0), 10 ** orderOfMagnitude(wamax), Ga, facecolor='red', alpha=0.2))
-            # ax.add_patch(Rectangle((wcmin, 1), wcmax, -(1 - Gp), facecolor='green', alpha=0.2))
-        # plt.xlim([0, wc + 1 + 10 ** _orderOfMagnitude(wc)])
-        # plt.ylim([0, 1.1])
-        plt.show()
 
     def plotPolesZeroes(self, z, p, labeltxt):
         self.scatterPoles.append(self.ax.scatter(np.real(p), np.imag(p), marker='x', color=self.colorMap[self.colorIndex], label=labeltxt + ' (polos)'))
@@ -185,3 +146,22 @@ class plotWidget():
         self.colorIndex = self.colorIndex + 1
         self.ax.legend()
         self.canvas.show()
+
+    def plotSelectedPZ(self, z, p, labeltxt):
+        self.ax.scatter(np.real(p), np.imag(p), marker='x', color=self.colorMap[0], label=labeltxt + ' (polos)')
+        self.ax.scatter(np.real(z), np.imag(z), marker='o', color=self.colorMap[0], label=labeltxt + ' (ceros)')
+        self.ax.set_aspect('equal')
+        self.ax.set_box_aspect(1)
+        self.ax.grid()
+        self.ax.legend()
+        self.canvas.show()
+
+    def plotSelectedP(self, p):
+        if p:
+            self.ax.scatter(np.real(p), np.imag(p), marker='x', color=self.colorMap[1])
+            self.canvas.show()
+
+    def plotSelectedZ(self, z):
+        if z:
+            self.ax.scatter(np.real(z), np.imag(z), marker='o', color=self.colorMap[1])
+            self.canvas.show()
