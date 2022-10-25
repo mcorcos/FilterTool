@@ -3,17 +3,20 @@ from PyQt5.QtWidgets import QVBoxLayout, QStackedWidget
 import math
 from scipy.signal import zpk2tf, ZerosPolesGain, tf2zpk
 import numpy as np
+from utility import *
 
 class StageHandle:
-    def __init__(self, page, comboBoxes, filterCombo):
+    def __init__(self, page, comboBoxes, filterCombo, stageCheckbox):
         self.graphs = [plotWidget(), plotWidget(), plotWidget()]
         self.transferFunctions = []
         self.data = []
         self.stages = []
+        self.stagesF = []
         self.graphNum = 0
         self.comboBoxes = comboBoxes
         self.filterCombo = filterCombo
         self.page = page
+        self.stageCheckbox = stageCheckbox
 
         i = 2
         for layout in page.findChild(QStackedWidget).findChildren(QVBoxLayout):
@@ -27,6 +30,7 @@ class StageHandle:
             combos.addItem('--')
         stages = math.ceil(len(self.transferFunctions[index-1][1])/2)
         self.stages = [None]*stages
+        self.stagesF = [None]*stages
         for i in range(stages):
             self.comboBoxes[0].addItem('Etapa ' + str(i+1))
         self.graphs[0].ax.clear()
@@ -35,9 +39,12 @@ class StageHandle:
         F = zpk2tf(self.transferFunctions[index - 1][0], self.transferFunctions[index - 1][1],
                    self.transferFunctions[index - 1][2])
         self.graphs[1].ax.clear()
-        self.graphs[1].plotBode(F, self.data[index - 1][1], self.data[index - 1][3],
-                                self.data[index - 1][0], self.data[index - 1][2], self.transferFunctions[index-1][3])
-
+        if self.data[index - 1][7] == 'highpass' or self.data[index - 1][7] == 'lowpass':
+            self.graphs[1].plotBode(F, self.data[index - 1][1], self.data[index - 1][3],
+                                    self.data[index - 1][0], self.data[index - 1][2], self.transferFunctions[index-1][3])
+        else:
+            self.graphs[1].plotBodeBand(F, self.data[index - 1][1], self.data[index - 1][3],
+                                        self.data[index - 1][0], self.data[index - 1][2], self.transferFunctions[index-1][3])
         for poles in self.transferFunctions[index - 1][1]:
             self.comboBoxes[1].addItem("{:g}".format(poles))
             self.comboBoxes[2].addItem("{:g}".format(poles))
@@ -48,6 +55,7 @@ class StageHandle:
 
     def deleteStage(self):
         self.stages[self.comboBoxes[0].currentIndex() - 1] = None
+        self.stagesF[self.comboBoxes[0].currentIndex() - 1] = None
         for i in range(1, len(self.comboBoxes)):
             self.comboBoxes[i].setCurrentIndex(0)
 
@@ -58,6 +66,7 @@ class StageHandle:
         index2 = self.comboBoxes[2].currentIndex() - 1
         index3 = self.comboBoxes[3].currentIndex() - 1
         index4 = self.comboBoxes[4].currentIndex() - 1
+        check = self.stageCheckbox.checkState()
         if index1 >= 0:
             P1 = self.transferFunctions[index][1][index1]
         else:
@@ -74,43 +83,97 @@ class StageHandle:
             Z2 = self.transferFunctions[index][0][index4]
         else:
             Z2 = None
-        if not P2 and not Z2 and not Z1:
-            self.stages[index0] = [[[], [P1], 1, 0], [index1+1, index2+1, index3+1, index4+1, index0+1]]
-        elif not P2 and not Z2:
-            self.stages[index0] = [[[Z1], [P1], 1, 0], [index1+1, index2+1, index3+1, index4+1, index0+1]]
-        elif not Z2:
-            self.stages[index0] = [[[Z1], [P1, P2], 1, 0], [index1+1, index2+1, index3+1, index4+1, index0+1]]
-        elif not Z2 and not Z1:
-            self.stages[index0] = [[[], [P1, P2], 1, 0], [index1+1, index2+1, index3+1, index4+1, index0+1]]
+        if P2 is None and Z2 is None and Z1 is None:
+            self.stages[index0] = [[[], [P1], 1, 0], [index1+1, index2+1, index3+1, index4+1, index0+1, check]]
+        elif P2 is None and Z2 is None:
+            self.stages[index0] = [[[Z1], [P1], 1, 0], [index1+1, index2+1, index3+1, index4+1, index0+1, check]]
+        elif Z2 is None:
+            self.stages[index0] = [[[Z1], [P1, P2], 1, 0], [index1+1, index2+1, index3+1, index4+1, index0+1, check]]
+        elif Z2 is None and Z1 is None:
+            self.stages[index0] = [[[], [P1, P2], 1, 0], [index1+1, index2+1, index3+1, index4+1, index0+1, check]]
         else:
-            self.stages[index0] = [[[Z1, Z2], [P1, P2], 1, 0], [index1+1, index2+1, index3+1, index4+1, index0+1]]
+            self.stages[index0] = [[[Z1, Z2], [P1, P2], 1, 0], [index1+1, index2+1, index3+1, index4+1, index0+1, check]]
         self.graphs[0].plotSelectedP(P1)
         self.graphs[0].plotSelectedP(P2)
         self.graphs[0].plotSelectedZ(Z1)
         self.graphs[0].plotSelectedZ(Z2)
 
     def solveQ(self):
-        print(len(self.stages))
         for i in range(len(self.stages)):
             Z = self.stages[i][0][0]
-            print(Z)
             if not Z or Z[0] is None:
-                print('la concha de tu madre')
                 Z = []
-            print(Z)
             P = self.stages[i][0][1]
             if not P or P[0] is None:
                 P = []
-            print(P)
             k = self.stages[i][0][2]
             F = zpk2tf(Z, P, k)
-            print(F)
+            G = 1/F[1][-1]
+            for j in range(len(F[1])):
+                F[1][j] = F[1][j]/F[1][-1]
+            G = G*F[0][-1]
+            for j in range(len(F[0])):
+                F[0][j] = F[0][j]/F[0][-1]
+            if len(F[0]) == 2:
+                wcz = 1/F[0][0]
+                Qz = 0
+            elif len(F[0]) == 3:
+                wcz = 1/math.sqrt(F[0][0])
+                Qz = 1/(wcz*F[0][1])
+            else:
+                wcz = None
+                Qz = None
+            if len(F[1]) == 2:
+                wcp = 1/F[1][0]
+                Qp = 0
+            if len(F[1]) == 3:
+                wcp = 1/math.sqrt(F[1][0])
+                Qp = 1/(wcp*F[1][1])
+            self.stagesF[i] = [F, G, wcz, Qz, wcp, Qp]
+            self.stages[i][0][3] = Qp
+
+    def solveGain(self):
+        Qt = 0
+        index = self.filterCombo.currentIndex() - 1
+        k = dB(self.transferFunctions[index][2])
+        arr = []
+        for stage in self.stages:
+            Qt = Qt + stage[0][3]
+        i = 0
+        for stage in self.stages:
+            arr.append([stage[0][3]/Qt, i])
+            i = i + 1
+        arr.sort()
+        for i in range(len(self.stages)):
+            if i < len(self.stages) - 1:
+                k = k/2
+            self.stages[arr[i][1]][0][2] = anti_dB(k)
+        print(self.stages)
+
+    def plotCascade(self):
+        poles = []
+        zeros = []
+        gain = 0
+        for stage in self.stages:
+            if stage[1][5]:
+                for i in range(len(stage[0][1])):
+                    poles.append(stage[0][1][i])
+                if not stage[0][0] or stage[0][0][0] is None:
+                    zeros = []
+                else:
+                    for i in range(len(stage[0][0])):
+                        zeros.append(stage[0][0][i])
+                gain += dB(stage[0][2])
+        gain = anti_dB(gain)
+        F = zpk2tf(zeros, poles, gain)
+        self.graphs[2].plotBodeAlt(F)
 
 
     def showSelection(self, index):
         if index-1 >= 0 and self.stages[index-1]:
             for i in range(1, len(self.comboBoxes)):
                 self.comboBoxes[i].setCurrentIndex(self.stages[index-1][1][i-1])
+            self.stageCheckbox.setChecked(self.stages[index-1][1][5])
 
     def placeConjugatePole1(self, index):
         if index-1 >= 0:

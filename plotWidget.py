@@ -82,6 +82,13 @@ class plotWidget():
         self.ax.legend()
         self.canvas.show()
 
+    def plotBodeAlt(self, F):
+        wp, m, p = signal.bode(F, n=3000)
+        self.ax.clear()
+        self.ax.semilogx(wp, m)
+        self.ax.grid('log')
+        self.canvas.show()
+
     def plotBodeBand(self, F, Gp, Ga, wc, wa, labeltxt):
         wm = max(wa[0], wa[1], wc[0], wc[1])
         wn = min(wa[0], wa[1], wc[0], wc[1])

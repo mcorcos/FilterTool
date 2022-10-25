@@ -37,7 +37,7 @@ color: rgb(185, 201, 221);
 border-color: rgb(7, 54, 66);</string>
      </property>
      <property name="currentIndex">
-      <number>4</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="lowPassTab">
       <attribute name="title">
@@ -1248,7 +1248,7 @@ selection-background-color: rgb(202, 237, 242);
           </layout>
          </item>
          <item>
-          <widget class="QCheckBox" name="checkBox">
+          <widget class="QCheckBox" name="passCheck">
            <property name="text">
             <string>Ancho de Banda</string>
            </property>
@@ -1715,7 +1715,7 @@ selection-background-color: rgb(202, 237, 242);
           </layout>
          </item>
          <item>
-          <widget class="QCheckBox" name="checkBox_2">
+          <widget class="QCheckBox" name="rejectCheck">
            <property name="text">
             <string>Ancho de Banda</string>
            </property>
@@ -2054,7 +2054,7 @@ selection-background-color: rgb(202, 237, 242);
         </layout>
        </item>
        <item>
-        <widget class="Line" name="line_5">
+        <widget class="Line" name="ghjk">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>

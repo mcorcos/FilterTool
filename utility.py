@@ -6,3 +6,6 @@ def dB(G):
 
 def orderOfMagnitude(number):
     return math.floor(math.log(number, 10))
+
+def anti_dB(G):
+    return 10**(G/20)
