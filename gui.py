@@ -37,7 +37,7 @@ class iniciar:
         self.comboBoxes = [self.ventana.stageCombo, self.ventana.p1Combo, self.ventana.p2Combo,
                            self.ventana.z1Combo, self.ventana.z2Combo]
         self.stageHandle = StageHandle(self.ventana.stageTab, self.comboBoxes,  self.ventana.filterCombo,
-                                       self.ventana.plotCheck)
+                                       self.ventana.plotCheck, self.ventana.gain)
 
         self.rightButtons = QtWidgets.QButtonGroup()
         self.rightButtons.addButton(self.ventana.RightLowPass, 0)
@@ -99,6 +99,7 @@ class iniciar:
         self.ventana.splitButton.clicked.connect(self.stageHandle.solveQ)
         self.ventana.splitButton.clicked.connect(self.stageHandle.solveGain)
         self.ventana.splitButton.clicked.connect(self.stageHandle.plotCascade)
+
 
         app.exec()
 
@@ -367,9 +368,9 @@ class iniciar:
             N = int(N)
             self.bandRejectData.append([wcN, wcP, Gp, waN, waP, Ga, N, label, fIndex])
             if wcN/waN < waP/wcP:
-                waP = wcN*wcP/waN
+                wcP = waN*waP/wcN
             elif wcN/waN >= waP/wcP:
-                waN = wcN*wcP/waP
+                wcN = waN*waP/wcP
             label = label + ' (simetrica)'
             self.bandRejectData.append([wcN, wcP, Gp, waN, waP, Ga, N, label, fIndex])
 
@@ -494,7 +495,9 @@ class iniciar:
     def plotBandReject(self):
         for i in reversed(range(1, 3)):
             wcN, wcP, Gp, waN, waP, Ga, Nin, label, fIndex = self.bandRejectData[-i]
+            print([wcN, wcP, Gp, waN, waP, Ga, Nin, label, fIndex])
             Wan = (wcP-wcN) / (waP-waN)
+            print(Wan)
             Wp = [wcN, wcP]
             Wa = [waN, waP]
             if self.ventana.BandRejectCombo.currentIndex() == 0:

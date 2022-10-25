@@ -164,11 +164,11 @@ class plotWidget():
         self.canvas.show()
 
     def plotSelectedP(self, p):
-        if p:
+        if p is not None:
             self.ax.scatter(np.real(p), np.imag(p), marker='x', color=self.colorMap[1])
             self.canvas.show()
 
     def plotSelectedZ(self, z):
-        if z:
+        if z is not None:
             self.ax.scatter(np.real(z), np.imag(z), marker='o', color=self.colorMap[1])
             self.canvas.show()

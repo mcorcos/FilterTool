@@ -6,7 +6,7 @@ import numpy as np
 from utility import *
 
 class StageHandle:
-    def __init__(self, page, comboBoxes, filterCombo, stageCheckbox):
+    def __init__(self, page, comboBoxes, filterCombo, stageCheckbox, gainBox):
         self.graphs = [plotWidget(), plotWidget(), plotWidget()]
         self.transferFunctions = []
         self.data = []
@@ -17,6 +17,7 @@ class StageHandle:
         self.filterCombo = filterCombo
         self.page = page
         self.stageCheckbox = stageCheckbox
+        self.gainBox = gainBox
 
         i = 2
         for layout in page.findChild(QStackedWidget).findChildren(QVBoxLayout):
@@ -84,15 +85,31 @@ class StageHandle:
         else:
             Z2 = None
         if P2 is None and Z2 is None and Z1 is None:
-            self.stages[index0] = [[[], [P1], 1, 0], [index1+1, index2+1, index3+1, index4+1, index0+1, check]]
+            self.stages[index0] = [[[], [P1], P1, 0], [index1+1, index2+1, index3+1, index4+1, index0+1, check]]
         elif P2 is None and Z2 is None:
-            self.stages[index0] = [[[Z1], [P1], 1, 0], [index1+1, index2+1, index3+1, index4+1, index0+1, check]]
+            if Z1:
+                G = P1/Z1
+            else:
+                G = P1
+            self.stages[index0] = [[[Z1], [P1], G, 0], [index1+1, index2+1, index3+1, index4+1, index0+1, check]]
         elif Z2 is None:
-            self.stages[index0] = [[[Z1], [P1, P2], 1, 0], [index1+1, index2+1, index3+1, index4+1, index0+1, check]]
+            if Z1:
+                G = (P1*P2)/Z1
+            else:
+                G = P1*P2
+            self.stages[index0] = [[[Z1], [P1, P2], G, 0], [index1+1, index2+1, index3+1, index4+1, index0+1, check]]
         elif Z2 is None and Z1 is None:
-            self.stages[index0] = [[[], [P1, P2], 1, 0], [index1+1, index2+1, index3+1, index4+1, index0+1, check]]
+            self.stages[index0] = [[[], [P1, P2], P1*P2, 0], [index1+1, index2+1, index3+1, index4+1, index0+1, check]]
         else:
-            self.stages[index0] = [[[Z1, Z2], [P1, P2], 1, 0], [index1+1, index2+1, index3+1, index4+1, index0+1, check]]
+            if Z1 and not Z2:
+                G = (P1*P2)/Z1
+            elif Z2 and not Z1:
+                G = (P1*P2)/Z2
+            elif not Z1 and not Z2:
+                G = P1 * P2
+            else:
+                G = (P1 * P2) / (Z2 * Z1)
+            self.stages[index0] = [[[Z1, Z2], [P1, P2], G, 0], [index1+1, index2+1, index3+1, index4+1, index0+1, check]]
         self.graphs[0].plotSelectedP(P1)
         self.graphs[0].plotSelectedP(P2)
         self.graphs[0].plotSelectedZ(Z1)
@@ -135,20 +152,27 @@ class StageHandle:
     def solveGain(self):
         Qt = 0
         index = self.filterCombo.currentIndex() - 1
-        k = dB(self.transferFunctions[index][2])
+        k = self.transferFunctions[index][2]
+        print(k)
         arr = []
         for stage in self.stages:
             Qt = Qt + stage[0][3]
+            print(stage[0][2])
+            k = k/stage[0][2]
         i = 0
+        print(k)
         for stage in self.stages:
             arr.append([stage[0][3]/Qt, i])
             i = i + 1
         arr.sort()
+        print(np.real(k))
+        k = dB(np.real(k))
         for i in range(len(self.stages)):
             if i < len(self.stages) - 1:
                 k = k/2
-            self.stages[arr[i][1]][0][2] = anti_dB(k)
-        print(self.stages)
+                print(k)
+            self.stages[arr[i][1]][0][2] = anti_dB(k)*self.stages[arr[i][1]][0][2]
+
 
     def plotCascade(self):
         poles = []
@@ -174,6 +198,7 @@ class StageHandle:
             for i in range(1, len(self.comboBoxes)):
                 self.comboBoxes[i].setCurrentIndex(self.stages[index-1][1][i-1])
             self.stageCheckbox.setChecked(self.stages[index-1][1][5])
+            self.gainBox.setText(str(dB(self.stages[index-1][0][2])))
 
     def placeConjugatePole1(self, index):
         if index-1 >= 0:
