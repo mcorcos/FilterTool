@@ -2,7 +2,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvas
 from matplotlib.backends.backend_qt import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
-import numpy as np
+from numpy import diff
 import scipy.signal as signal
 from utility import *
 
@@ -27,8 +27,20 @@ class plotWidget():
         self.canvas.show()
 
     def patchHighPass(self, Gp, Ga, wc, wa):
-        self.ax.add_patch(Rectangle((wc, 1),10 ** orderOfMagnitude(wc) , -(1 - Gp), facecolor='green', alpha=0.2))
+        self.ax.add_patch(Rectangle((wc, 1), 10 ** orderOfMagnitude(wc), -(1 - Gp), facecolor='green', alpha=0.2))
         self.ax.add_patch(Rectangle((0, 0), wa, Ga, facecolor='red', alpha=0.2))
+        self.canvas.show()
+
+    def patchBandPass(self, Gp, Ga, wc, wa):
+        self.ax.add_patch(Rectangle((wc[0], 1), wc[1]-wc[0], -(1 - Gp), facecolor='green', alpha=0.2))
+        self.ax.add_patch(Rectangle((0, 0), wa[0], Ga, facecolor='red', alpha=0.2))
+        self.ax.add_patch(Rectangle((wa[1], 0), 10 ** orderOfMagnitude(wa[1]), Ga, facecolor='red', alpha=0.2))
+        self.canvas.show()
+
+    def patchBandReject(self, Gp, Ga, wc, wa):
+        self.ax.add_patch(Rectangle((0, 1), wc[0], -(1 - Gp), facecolor='green', alpha=0.2))
+        self.ax.add_patch(Rectangle((wc[1], 1), 10 ** orderOfMagnitude(wc[1]), -(1 - Gp), facecolor='green', alpha=0.2))
+        self.ax.add_patch(Rectangle((wa[0], 0), wa[1] - wa[0], Ga, facecolor='red', alpha=0.2))
         self.canvas.show()
 
     def patchLowPassBode(self, Gp, Ga, wc, wa):
@@ -45,6 +57,19 @@ class plotWidget():
         self.ax.add_patch(Rectangle((wc, -dB(Gp)), 10 ** (orderOfMagnitude(wc) + 1), 300, facecolor='green', alpha=0.2))
         self.ax.add_patch(Rectangle((0, 0), wa, -dB(Ga), facecolor='red', alpha=0.2))
         self.canvas.show()
+
+    def patchBandPassAt(self, Gp, Ga, wc, wa):
+        self.ax.add_patch(Rectangle((wc[0], -dB(Gp)),  wc[1] - wc[0], 300, facecolor='green', alpha=0.2))
+        self.ax.add_patch(Rectangle((0, 0), wa[0], -dB(Ga), facecolor='red', alpha=0.2))
+        self.ax.add_patch(Rectangle((wa[1], 0), 10 ** (orderOfMagnitude(wa[1]) + 1), -dB(Ga), facecolor='red', alpha=0.2))
+        self.canvas.show()
+
+    def patchBandRejectAt(self, Gp, Ga, wc, wa):
+        self.ax.add_patch(Rectangle((0, -dB(Gp)), wc[0], 300, facecolor='green', alpha=0.2))
+        self.ax.add_patch(Rectangle((wc[1], -dB(Gp)), 10 ** (orderOfMagnitude(wc[1]) + 1), 300, facecolor='green', alpha=0.2))
+        self.ax.add_patch(Rectangle((wa[0], 0), wa[1] - wa[0], -dB(Ga), facecolor='red', alpha=0.2))
+        self.canvas.show()
+
 
     def plotTemplate(self, F, Gp, Ga, wa, labeltxt):
         wp, m, p = signal.bode(F, np.linspace(0, (wa) + 10 ** orderOfMagnitude(wa), 1000 + 10 ** orderOfMagnitude(wa)))
@@ -123,6 +148,17 @@ class plotWidget():
         wp, m, p = signal.bode(F, np.logspace(orderOfMagnitude(wn) - 1, 1 + orderOfMagnitude(wm),
                                               1000 + 10 ** orderOfMagnitude(wm)))
         self.ax.semilogx(wp, p, label=labeltxt)
+        self.ax.grid('log')
+        self.ax.legend()
+        self.canvas.show()
+
+    def plotRetardo(self, F, wc, wa, labeltxt):
+        wm = max(wa, wc)
+        wn = min(wa, wc)
+        wp, m, p = signal.bode(F, np.logspace(orderOfMagnitude(wn) - 1, 1 + orderOfMagnitude(wm),
+                                              1000 + 10 ** orderOfMagnitude(wm)))
+        dpdw = diff(p)/diff(wp)
+        self.ax.semilogx(wp[:-1], dpdw, label=labeltxt)
         self.ax.grid('log')
         self.ax.legend()
         self.canvas.show()

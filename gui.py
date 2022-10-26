@@ -1,3 +1,5 @@
+import math
+
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QVBoxLayout
 from filters import *
@@ -36,8 +38,9 @@ class iniciar:
 
         self.comboBoxes = [self.ventana.stageCombo, self.ventana.p1Combo, self.ventana.p2Combo,
                            self.ventana.z1Combo, self.ventana.z2Combo]
+        self.labels = [self.ventana.fcPolos, self.ventana.qPolos, self.ventana.fcZeros, self.ventana.qZeros]
         self.stageHandle = StageHandle(self.ventana.stageTab, self.comboBoxes,  self.ventana.filterCombo,
-                                       self.ventana.plotCheck, self.ventana.gain)
+                                       self.ventana.plotCheck, self.ventana.gain, self.labels)
 
         self.rightButtons = QtWidgets.QButtonGroup()
         self.rightButtons.addButton(self.ventana.RightLowPass, 0)
@@ -99,6 +102,7 @@ class iniciar:
         self.ventana.splitButton.clicked.connect(self.stageHandle.solveQ)
         self.ventana.splitButton.clicked.connect(self.stageHandle.solveGain)
         self.ventana.splitButton.clicked.connect(self.stageHandle.plotCascade)
+        self.ventana.refreshButton.clicked.connect(self.stageHandle.updatePlot)
 
 
         app.exec()
@@ -175,10 +179,9 @@ class iniciar:
             self.ventana.highPassList.addItem(self.ventana.HighPassLabel.text())
         elif index == 2:
             self.plotBandPass()
-
         elif index == 3:
             self.plotBandReject()
-            self.ventana.bandRejectList.addItem(self.ventana.BandRejectLabel.text())
+
 
 
     def deleteAll(self):
@@ -236,52 +239,56 @@ class iniciar:
 
     def showDataLP(self, index):
         if index != 0:
-            Wp, Gp, Wa, Ga, N, label, fIndex = self.lowPassData[index - 1]
+            Wp, Gp, Wa, Ga, N, denorm, label, fIndex = self.lowPassData[index - 1]
             self.ventana.LowPassWp.setText(str(Wp))
             self.ventana.LowPassWa.setText(str(Wa))
-            self.ventana.LowPassGp.setText(str(Gp))
-            self.ventana.LowPassGa.setText(str(Ga))
+            self.ventana.LowPassGp.setText(str(dB(Gp)))
+            self.ventana.LowPassGa.setText(str(dB(Ga)))
             self.ventana.LowPassN.setText(str(N))
             self.ventana.LowPassLabel.setText(label)
             self.ventana.LowPassCombo.setCurrentIndex(fIndex)
+            self.ventana.LowPassDenorm.setText(str(denorm))
 
 
     def showDataHP(self, index):
         if index != 0:
-            Wp, Gp, Wa, Ga, N, label, fIndex = self.highPassData[index - 1]
+            Wp, Gp, Wa, Ga, N, denorm, label, fIndex = self.highPassData[index - 1]
             self.ventana.HighPassWp.setText(str(Wp))
             self.ventana.HighPassWa.setText(str(Wa))
-            self.ventana.HighPassGp.setText(str(Gp))
-            self.ventana.HighPassGa.setText(str(Ga))
+            self.ventana.HighPassGp.setText(str(dB(Gp)))
+            self.ventana.HighPassGa.setText(str(dB(Ga)))
             self.ventana.HighPassN.setText(str(N))
             self.ventana.HighPassLabel.setText(label)
             self.ventana.HighPassCombo.setCurrentIndex(fIndex)
+            self.ventana.HighPassDenorm.setText(str(denorm))
 
     def showDataBP(self, index):
         if index != 0:
-            wcN, wcP, Gp, waN, waP, Ga, N, label, fIndex = self.bandPassData[index - 1]
+            wcN, wcP, Gp, waN, waP, Ga, N, denorm, label, fIndex = self.bandPassData[index - 1]
             Wp = [wcN, wcP]
             Wa = [waN, waP]
             self.ventana.BandPassBp.setText(str(Wp))
             self.ventana.BandPassBa.setText(str(Wa))
-            self.ventana.BandPassGp.setText(str(Gp))
-            self.ventana.BandPassGa.setText(str(Ga))
+            self.ventana.BandPassGp.setText(str(dB(Gp)))
+            self.ventana.BandPassGa.setText(str(dB(Ga)))
             self.ventana.BandPassN.setText(str(N))
             self.ventana.BandPassLabel.setText(label)
             self.ventana.BandPassCombo.setCurrentIndex(fIndex)
+            self.ventana.BandPassDenorm.setText(str(denorm))
 
     def showDataBR(self, index):
         if index != 0:
-            wcN, wcP, Gp, waN, waP, Ga, N, label, fIndex = self.bandRejectData[index - 1]
+            wcN, wcP, Gp, waN, waP, Ga, N, desnorm, label, fIndex = self.bandRejectData[index - 1]
             Wp = [wcN, wcP]
             Wa = [waN, waP]
             self.ventana.BandRejectBp.setText(str(Wp))
             self.ventana.BandRejectBa.setText(str(Wa))
-            self.ventana.BandRejectGp.setText(str(Gp))
-            self.ventana.BandRejectGa.setText(str(Ga))
+            self.ventana.BandRejectGp.setText(str(dB(Gp)))
+            self.ventana.BandRejectGa.setText(str(dB(Ga)))
             self.ventana.BandRejectN.setText(str(N))
             self.ventana.BandRejectLabel.setText(label)
             self.ventana.BandRejectCombo.setCurrentIndex(fIndex)
+            self.ventana.BandRejectDesnorm.setText(str(desnorm))
 
 
     def getDataLowHigh(self):
@@ -294,22 +301,24 @@ class iniciar:
             N = self.ventana.LowPassN.text()
             label = self.ventana.LowPassLabel.text()
             fIndex = self.ventana.LowPassCombo.currentIndex()
+            denorm = float(self.ventana.LowPassDenorm.text())
             if not N:
                 N = 0
             N = int(N)
-            self.lowPassData.append([Wp, Gp, Wa, Ga, N, label, fIndex])
+            self.lowPassData.append([Wp, Gp, Wa, Ga, N, denorm, label, fIndex])
         elif index == 1:
             Wp = float(self.ventana.HighPassWp.text())
             Gp = anti_dB(float(self.ventana.HighPassGp.text()))
             Wa = float(self.ventana.HighPassWa.text())
             Ga = anti_dB(float(self.ventana.HighPassGa.text()))
             N = self.ventana.HighPassN.text()
+            denorm = float(self.ventana.HighPassDenorm.text())
             label = self.ventana.HighPassLabel.text()
             fIndex = self.ventana.HighPassCombo.currentIndex()
             if not N:
                 N = 0
             N = int(N)
-            self.highPassData.append([Wp, Gp, Wa, Ga, N, label, fIndex])
+            self.highPassData.append([Wp, Gp, Wa, Ga, N, denorm, label, fIndex])
         elif index == 2:
             if not self.ventana.passCheck.isChecked():
                 Wc = self.ventana.BandPassBp.text().split(', ')
@@ -322,10 +331,11 @@ class iniciar:
                 Wo = float(self.ventana.BandPassWo.text())
                 Bp = float(self.ventana.BandPassBp.text())
                 Ba = float(self.ventana.BandPassBa.text())
-                wcP = Wo+Bp/2
-                wcN = Wo-Bp/2
-                waP = Wo+Ba/2
-                waN = Wo-Ba/2
+                wcP = (Bp+math.sqrt(Bp**2+4*Wo**2))/2
+                wcN = (-Bp+math.sqrt(Bp**2+4*Wo**2))/2
+                waP = (Ba+math.sqrt(Ba**2+4*Wo**2))/2
+                waN = (-Ba+math.sqrt(Ba**2+4*Wo**2))/2
+            denorm = float(self.ventana.BandPassDenorm.text())
             Gp = anti_dB(float(self.ventana.BandPassGp.text()))
             Ga = anti_dB(float(self.ventana.BandPassGa.text()))
             N = self.ventana.BandPassN.text()
@@ -334,13 +344,13 @@ class iniciar:
             if not N:
                 N = 0
             N = int(N)
-            self.bandPassData.append([wcN, wcP, Gp, waN, waP, Ga, N, label, fIndex])
+            self.bandPassData.append([wcN, wcP, Gp, waN, waP, Ga, N, denorm, label, fIndex])
             if wcN/waN < waP/wcP:
                 waP = wcN*wcP/waN
             elif wcN/waN >= waP/wcP:
                 waN = wcN*wcP/waP
             label = label + ' (simetrica)'
-            self.bandPassData.append([wcN, wcP, Gp, waN, waP, Ga, N, label, fIndex])
+            self.bandPassData.append([wcN, wcP, Gp, waN, waP, Ga, N, denorm, label, fIndex])
 
         elif index == 3:
             if not self.ventana.rejectCheck.isChecked():
@@ -354,10 +364,11 @@ class iniciar:
                 Wo = float(self.ventana.BandRejectWo.text())
                 Bp = float(self.ventana.BandRejectBp.text())
                 Ba = float(self.ventana.BandRejectBa.text())
-                wcP = Wo + Bp / 2
-                wcN = Wo - Bp / 2
-                waP = Wo + Ba / 2
-                waN = Wo - Ba / 2
+                wcP = (Bp + math.sqrt(Bp ** 2 + 4 * Wo ** 2)) / 2
+                wcN = (-Bp + math.sqrt(Bp ** 2 + 4 * Wo ** 2)) / 2
+                waP = (Ba + math.sqrt(Ba ** 2 + 4 * Wo ** 2)) / 2
+                waN = (-Ba + math.sqrt(Ba ** 2 + 4 * Wo ** 2)) / 2
+            desnorm = float(self.ventana.BandRejectDesnorm.text())
             Gp = anti_dB(float(self.ventana.BandRejectGp.text()))
             Ga = anti_dB(float(self.ventana.BandRejectGa.text()))
             N = self.ventana.BandRejectN.text()
@@ -366,17 +377,17 @@ class iniciar:
             if not N:
                 N = 0
             N = int(N)
-            self.bandRejectData.append([wcN, wcP, Gp, waN, waP, Ga, N, label, fIndex])
-            if wcN/waN < waP/wcP:
+            self.bandRejectData.append([wcN, wcP, Gp, waN, waP, Ga, N, desnorm, label, fIndex])
+            if wcN/waN > waP/wcP:
                 wcP = waN*waP/wcN
-            elif wcN/waN >= waP/wcP:
+            elif wcN/waN <= waP/wcP:
                 wcN = waN*waP/wcP
             label = label + ' (simetrica)'
-            self.bandRejectData.append([wcN, wcP, Gp, waN, waP, Ga, N, label, fIndex])
+            self.bandRejectData.append([wcN, wcP, Gp, waN, waP, Ga, N, desnorm, label, fIndex])
 
     def template(self):
         if self.ventana.filterTabs.currentIndex() == 0:
-            Wp, Gp, Wa, Ga, Nin, label, fIndex = self.lowPassData[-1]
+            Wp, Gp, Wa, Ga, Nin, denorm, label, fIndex = self.lowPassData[-1]
             for i in range(len(self.lowPass.array)):
                 [p.remove() for p in reversed(self.lowPass.array[i].ax.patches)]
             Wan = Wa / Wp
@@ -385,108 +396,123 @@ class iniciar:
             self.lowPass.array[2].patchLowPassBode(Gp, Ga, Wp, Wa)
             self.lowPass.array[3].patchLowPassAt(Gp, Ga, Wp, Wa)
         if self.ventana.filterTabs.currentIndex() == 1:
-            Wp, Gp, Wa, Ga, Nin, label, fIndex = self.highPassData[-1]
+            Wp, Gp, Wa, Ga, Nin, denorm, label, fIndex = self.highPassData[-1]
             for i in range(len(self.highPass.array)):
                 [p.remove() for p in reversed(self.highPass.array[i].ax.patches)]
             Wan = Wp / Wa
             self.highPass.array[0].patchLowPass(Gp, Ga, 1, Wan)
             self.highPass.array[1].patchHighPass(Gp, Ga, Wp, Wa)
             self.highPass.array[3].patchHighPassAt(Gp, Ga, Wp, Wa)
+        if self.ventana.filterTabs.currentIndex() == 2:
+            for i in range(len(self.bandPass.array)):
+                [p.remove() for p in reversed(self.bandPass.array[i].ax.patches)]
+            for i in range(1, 3):
+                WpN, WpP, Gp, WaN, WaP, Ga, Nin, denorm, label, fIndex = self.bandPassData[-i]
+                Wan = (WaP - WaN) / (WpP - WpN)
+                Wp = [WpN, WpP]
+                Wa = [WaN, WaP]
+                self.bandPass.array[0].patchLowPass(Gp, Ga, 1, Wan)
+                self.bandPass.array[1].patchBandPass(Gp, Ga, Wp, Wa)
+                self.bandPass.array[3].patchBandPassAt(Gp, Ga, Wp, Wa)
+        if self.ventana.filterTabs.currentIndex() == 3:
+            for i in range(len(self.bandReject.array)):
+                [p.remove() for p in reversed(self.bandReject.array[i].ax.patches)]
+            for i in range(1, 3):
+                WpN, WpP, Gp, WaN, WaP, Ga, Nin, desnorm, label, fIndex = self.bandRejectData[-i]
+                Wan = (WpP - WpN) / (WaP - WaN)
+                Wp = [WpN, WpP]
+                Wa = [WaN, WaP]
+                self.bandReject.array[0].patchLowPass(Gp, Ga, 1, Wan)
+                self.bandReject.array[1].patchBandReject(Gp, Ga, Wp, Wa)
+                self.bandReject.array[3].patchBandRejectAt(Gp, Ga, Wp, Wa)
 
     def plotLowPass(self):
-        Wp, Gp, Wa, Ga, Nin, label, fIndex = self.lowPassData[-1]
+        Wp, Gp, Wa, Ga, Nin, denorm, label, fIndex = self.lowPassData[-1]
         Wan = Wa/Wp
         if self.ventana.LowPassCombo.currentIndex() == 0:
-            zn, pn, kn = butterNormalized(Wan, Gp, Ga, Nin)
-            z, p, k, N = butter(Wp, Wa, Gp, Ga, 'lowpass', Nin)
+            zn, pn, kn, N = butterNormalized(Wan, Gp, Ga, Nin)
         elif self.ventana.LowPassCombo.currentIndex() == 1:
-            zn, pn, kn = chevyINormalized(Wan, Gp, Ga, Nin)
-            z, p, k, N = chevyI(Wp, Wa, Gp, Ga, 'lowpass', Nin)
+            zn, pn, kn, N = chevyINormalized(Wan, Gp, Ga, Nin)
         elif self.ventana.LowPassCombo.currentIndex() == 2:
-            zn, pn, kn = chevyIINormalized(Wan, Gp, Ga, Nin)
-            z, p, k, N = chevyII(Wp, Wa, Gp, Ga, 'lowpass', Nin)
+            zn, pn, kn, N = chevyIINormalized(Wan, Gp, Ga, Nin)
         elif self.ventana.LowPassCombo.currentIndex() == 3:
-            zn, pn, kn = cauerNormalized(Wan, Gp, Ga, Nin)
-            z, p, k, N = cauer(Wp, Wa, Gp, Ga, 'lowpass', Nin)
+            zn, pn, kn, N = cauerNormalized(Wan, Gp, Ga, Nin)
+        z, p, k = denormLp(zn, pn, kn, Ga, Wan, Wp, denorm)
         F = zpk2tf(z, p, k)
         self.lowPass.array[0].plotTemplate(zpk2tf(zn, pn, kn), Gp, Ga, Wan, label)
         self.lowPass.array[1].plotVeces(F, Gp, Ga, Wp, Wa, label)
         self.lowPass.array[2].plotBode(F, Gp, Ga, Wp, Wa, label)
         self.lowPass.array[3].plotAt(F, Wp, Wa, label)
         self.lowPass.array[4].plotFase(F, Wp, Wa, label)
-        self.lowPass.array[5].plotAt(F, Wp, Wa, label)
+        self.lowPass.array[5].plotRetardo(F, Wp, Wa, label)
         self.lowPass.array[6].plotStepResp(F, label)
         self.lowPass.array[7].plotPolesZeroes(z, p, label)
         self.ventana.LowPassN.setText(str(N))
         self.lowPassData.pop(-1)
-        self.lowPassData.append([Wp, Gp, Wa, Ga, N, label, fIndex])
+        self.lowPassData.append([Wp, Gp, Wa, Ga, N, denorm, label, fIndex])
         self.stageHandle.transferFunctions.append([z, p, k, label])
         self.stageHandle.data.append([Wp, Gp, Wa, Ga, N, label, fIndex, 'lowpass'])
         self.ventana.filterCombo.addItem(label)
 
-        #self.printSos(z, p, k)
 
     def plotHighPass(self):
-        Wp, Gp, Wa, Ga, Nin, label, fIndex = self.highPassData[-1]
+        Wp, Gp, Wa, Ga, Nin, denorm, label, fIndex = self.highPassData[-1]
         Wan = Wp / Wa
         if self.ventana.HighPassCombo.currentIndex() == 0:
-            zn, pn, kn = butterNormalized(Wan, Gp, Ga, Nin)
-            z, p, k, N = butter(Wp, Wa, Gp, Ga, 'highpass', Nin)
+            zn, pn, kn, N = butterNormalized(Wan, Gp, Ga, Nin)
         elif self.ventana.HighPassCombo.currentIndex() == 1:
-            zn, pn, kn = chevyINormalized(Wan, Gp, Ga, Nin)
-            z, p, k, N = chevyI(Wp, Wa, Gp, Ga, 'highpass', Nin)
+            zn, pn, kn, N = chevyINormalized(Wan, Gp, Ga, Nin)
         elif self.ventana.HighPassCombo.currentIndex() == 2:
-            zn, pn, kn = chevyIINormalized(Wan, Gp, Ga, Nin)
-            z, p, k, N = chevyII(Wp, Wa, Gp, Ga, 'highpass', Nin)
+            zn, pn, kn, N = chevyIINormalized(Wan, Gp, Ga, Nin)
         elif self.ventana.HighPassCombo.currentIndex() == 3:
-            zn, pn, kn = cauerNormalized(Wan, Gp, Ga, Nin)
-            z, p, k, N = cauer(Wp, Wa, Gp, Ga, 'highpass', Nin)
+            zn, pn, kn, N = cauerNormalized(Wan, Gp, Ga, Nin)
+        z, p, k = denormhp(zn, pn, kn, Ga, Wan, Wp, denorm)
         F = zpk2tf(z, p, k)
         self.highPass.array[0].plotTemplate(zpk2tf(zn, pn, kn), Gp, Ga, Wan, label)
         self.highPass.array[1].plotVeces(F, Gp, Ga, Wp, Wa, label)
         self.highPass.array[2].plotBode(F, Gp, Ga, Wp, Wa, label)
         self.highPass.array[3].plotAt(F, Wp, Wa, label)
         self.highPass.array[4].plotFase(F, Wp, Wa, label)
-        self.highPass.array[5].plotAt(F, Wp, Wa, label)
+        self.highPass.array[5].plotRetardo(F, Wp, Wa, label)
         self.highPass.array[6].plotStepResp(F, label)
         self.highPass.array[7].plotPolesZeroes(z, p, label)
         self.ventana.HighPassN.setText(str(N))
         self.highPassData.pop(-1)
-        self.highPassData.append([Wp, Gp, Wa, Ga, N, label, fIndex])
+        self.highPassData.append([Wp, Gp, Wa, Ga, N, denorm, label, fIndex])
         self.stageHandle.transferFunctions.append([z, p, k, label])
         self.stageHandle.data.append([Wp, Gp, Wa, Ga, N, label, fIndex, 'highpass'])
         self.ventana.filterCombo.addItem(label)
 
     def plotBandPass(self):
         for i in reversed(range(1, 3)):
-            wcN, wcP, Gp, waN, waP, Ga, Nin, label, fIndex = self.bandPassData[-i]
+            wcN, wcP, Gp, waN, waP, Ga, Nin, denorm, label, fIndex = self.bandPassData[-i]
             Wan = (waP-waN) / (wcP-wcN)
             Wp = [wcN, wcP]
             Wa = [waN, waP]
             if self.ventana.BandPassCombo.currentIndex() == 0:
-                zn, pn, kn = butterNormalized(Wan, Gp, Ga, Nin)
-                z, p, k, N = butter(Wp, Wa, Gp, Ga, 'bandpass', Nin)
+                zn, pn, kn, N = butterNormalized(Wan, Gp, Ga, Nin)
             elif self.ventana.BandPassCombo.currentIndex() == 1:
-                zn, pn, kn = chevyINormalized(Wan, Gp, Ga, Nin)
-                z, p, k, N = chevyI(Wp, Wa, Gp, Ga, 'bandpass', Nin)
+                zn, pn, kn, N = chevyINormalized(Wan, Gp, Ga, Nin)
             elif self.ventana.BandPassCombo.currentIndex() == 2:
-                zn, pn, kn = chevyIINormalized(Wan, Gp, Ga, Nin)
-                z, p, k, N = chevyII(Wp, Wa, Gp, Ga, 'bandpass', Nin)
+                zn, pn, kn, N = chevyIINormalized(Wan, Gp, Ga, Nin)
             elif self.ventana.BandPassCombo.currentIndex() == 3:
-                zn, pn, kn = cauerNormalized(Wan, Gp, Ga, Nin)
-                z, p, k, N = cauer(Wp, Wa, Gp, Ga, 'bandpass', Nin)
+                zn, pn, kn, N = cauerNormalized(Wan, Gp, Ga, Nin)
+            z, p, k = denormBp(zn, pn, kn, Ga, Wan, math.sqrt(Wp[0]*Wp[1]), Wp[1]-Wp[0], denorm)
             F = zpk2tf(z, p, k)
             self.bandPass.array[0].plotTemplate(zpk2tf(zn, pn, kn), Gp, Ga, Wan, label)
             self.bandPass.array[1].plotVecesBand(F, Gp, Ga, Wp, Wa, label)
             self.bandPass.array[2].plotBodeBand(F, Gp, Ga, Wp, Wa, label)
             self.bandPass.array[3].plotAtBand(F, Wp, Wa, label)
             self.bandPass.array[4].plotFaseBand(F, Wp, Wa, label)
-            self.bandPass.array[5].plotAtBand(F, Wp, Wa, label)
+            #self.bandPass.array[5].plotRetardo(F, Wp, Wa, label)
             self.bandPass.array[6].plotStepResp(F, label)
             self.bandPass.array[7].plotPolesZeroes(z, p, label)
             self.ventana.BandPassN.setText(str(N))
             self.bandPassData.pop(-i)
-            self.bandPassData.insert(-i+1, [wcN, wcP, Gp, waN, waP, Ga, N, label, fIndex])
+            if i == 1:
+                self.bandPassData.append([wcN, wcP, Gp, waN, waP, Ga, N, denorm, label, fIndex])
+            else:
+                self.bandPassData.insert(-i, [wcN, wcP, Gp, waN, waP, Ga, N, denorm, label, fIndex])
             self.stageHandle.transferFunctions.append([z, p, k, label])
             self.stageHandle.data.append([Wp, Gp, Wa, Ga, N, label, fIndex, 'bandpass'])
             self.ventana.filterCombo.addItem(label)
@@ -494,36 +520,34 @@ class iniciar:
 
     def plotBandReject(self):
         for i in reversed(range(1, 3)):
-            wcN, wcP, Gp, waN, waP, Ga, Nin, label, fIndex = self.bandRejectData[-i]
-            print([wcN, wcP, Gp, waN, waP, Ga, Nin, label, fIndex])
+            wcN, wcP, Gp, waN, waP, Ga, Nin, desnorm, label, fIndex = self.bandRejectData[-i]
             Wan = (wcP-wcN) / (waP-waN)
-            print(Wan)
             Wp = [wcN, wcP]
             Wa = [waN, waP]
             if self.ventana.BandRejectCombo.currentIndex() == 0:
-                zn, pn, kn = butterNormalized(Wan, Gp, Ga, Nin)
-                z, p, k, N = butter(Wp, Wa, Gp, Ga, 'bandstop', Nin)
+                zn, pn, kn, N = butterNormalized(Wan, Gp, Ga, Nin)
             elif self.ventana.BandRejectCombo.currentIndex() == 1:
-                zn, pn, kn = chevyINormalized(Wan, Gp, Ga, Nin)
-                z, p, k, N = chevyI(Wp, Wa, Gp, Ga, 'bandstop', Nin)
+                zn, pn, kn, N = chevyINormalized(Wan, Gp, Ga, Nin)
             elif self.ventana.BandRejectCombo.currentIndex() == 2:
-                zn, pn, kn = chevyIINormalized(Wan, Gp, Ga, Nin)
-                z, p, k, N = chevyII(Wp, Wa, Gp, Ga, 'bandstop', Nin)
+                zn, pn, kn, N = chevyIINormalized(Wan, Gp, Ga, Nin)
             elif self.ventana.BandRejectCombo.currentIndex() == 3:
-                zn, pn, kn = cauerNormalized(Wan, Gp, Ga, Nin)
-                z, p, k, N = cauer(Wp, Wa, Gp, Ga, 'bandstop', Nin)
+                zn, pn, kn, N = cauerNormalized(Wan, Gp, Ga, Nin)
+            z, p, k = denormBr(zn, pn, kn, Ga, Wan, math.sqrt(Wp[0]*Wp[1]), Wp[1]-Wp[0], desnorm)
             F = zpk2tf(z, p, k)
             self.bandReject.array[0].plotTemplate(zpk2tf(zn, pn, kn), Gp, Ga, Wan, label)
             self.bandReject.array[1].plotVecesBand(F, Gp, Ga, Wp, Wa, label)
             self.bandReject.array[2].plotBodeBand(F, Gp, Ga, Wp, Wa, label)
             self.bandReject.array[3].plotAtBand(F, Wp, Wa, label)
             self.bandReject.array[4].plotFaseBand(F, Wp, Wa, label)
-            self.bandReject.array[5].plotAtBand(F, Wp, Wa, label)
+            self.bandReject.array[5].plotRetardo(F, Wp, Wa, label)
             self.bandReject.array[6].plotStepResp(F, label)
             self.bandReject.array[7].plotPolesZeroes(z, p, label)
             self.ventana.BandRejectN.setText(str(N))
             self.bandRejectData.pop(-i)
-            self.bandRejectData.insert(-i + 1, [wcN, wcP, Gp, waN, waP, Ga, N, label, fIndex])
+            if i == 1:
+                self.bandRejectData.append([wcN, wcP, Gp, waN, waP, Ga, N, desnorm, label, fIndex])
+            else:
+                self.bandRejectData.insert(-i, [wcN, wcP, Gp, waN, waP, Ga, N, desnorm, label, fIndex])
             self.stageHandle.transferFunctions.append([z, p, k, label])
             self.stageHandle.data.append([Wp, Gp, Wa, Ga, N, label, fIndex, 'bandreject'])
             self.ventana.filterCombo.addItem(label)

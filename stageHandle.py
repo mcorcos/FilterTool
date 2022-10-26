@@ -6,7 +6,7 @@ import numpy as np
 from utility import *
 
 class StageHandle:
-    def __init__(self, page, comboBoxes, filterCombo, stageCheckbox, gainBox):
+    def __init__(self, page, comboBoxes, filterCombo, stageCheckbox, gainBox, labels):
         self.graphs = [plotWidget(), plotWidget(), plotWidget()]
         self.transferFunctions = []
         self.data = []
@@ -18,6 +18,7 @@ class StageHandle:
         self.page = page
         self.stageCheckbox = stageCheckbox
         self.gainBox = gainBox
+        self.labels = labels
 
         i = 2
         for layout in page.findChild(QStackedWidget).findChildren(QVBoxLayout):
@@ -165,7 +166,6 @@ class StageHandle:
             arr.append([stage[0][3]/Qt, i])
             i = i + 1
         arr.sort()
-        print(np.real(k))
         k = dB(np.real(k))
         for i in range(len(self.stages)):
             if i < len(self.stages) - 1:
@@ -199,6 +199,15 @@ class StageHandle:
                 self.comboBoxes[i].setCurrentIndex(self.stages[index-1][1][i-1])
             self.stageCheckbox.setChecked(self.stages[index-1][1][5])
             self.gainBox.setText(str(dB(self.stages[index-1][0][2])))
+            self.labels[0].setText('fc/fo (polos): ' + str(self.stagesF[index-1][4]))
+            self.labels[1].setText('Q (polos): ' + str(self.stagesF[index - 1][5]))
+            self.labels[2].setText('fc/fo (ceros): ' + str(self.stagesF[index - 1][2]))
+            self.labels[3].setText('Q (ceros): ' + str(self.stagesF[index - 1][3]))
+
+    def updatePlot(self):
+        index = self.comboBoxes[0].currentIndex() - 1
+        self.stages[index][1][5] = self.stageCheckbox.checkState()
+        self.plotCascade()
 
     def placeConjugatePole1(self, index):
         if index-1 >= 0:
