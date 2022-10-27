@@ -2095,7 +2095,7 @@ selection-background-color: rgb(202, 237, 242);
               </size>
              </property>
              <property name="text">
-              <string>Ganashe:</string>
+              <string>Ganancia:</string>
              </property>
             </widget>
            </item>

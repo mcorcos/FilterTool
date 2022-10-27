@@ -158,20 +158,28 @@ class StageHandle:
         arr = []
         for stage in self.stages:
             Qt = Qt + stage[0][3]
-            print(stage[0][2])
             k = k/stage[0][2]
         i = 0
-        print(k)
         for stage in self.stages:
             arr.append([stage[0][3]/Qt, i])
             i = i + 1
         arr.sort()
+        print(arr)
         k = dB(np.real(k))
-        for i in range(len(self.stages)):
-            if i < len(self.stages) - 1:
-                k = k/2
-                print(k)
-            self.stages[arr[i][1]][0][2] = anti_dB(k)*self.stages[arr[i][1]][0][2]
+        print(k)
+        if k < 0:
+            for i in reversed(range(len(self.stages))):
+                if i >= 1:#< len(self.stages) - 1:
+                    k = k/2
+                    print(k)
+                self.stages[arr[i][1]][0][2] = anti_dB(k)*self.stages[arr[i][1]][0][2]
+        else:
+            for i in range(len(self.stages)):
+                if i < len(self.stages) - 1:
+                    k = k/2
+                    print(k)
+                self.stages[arr[i][1]][0][2] = anti_dB(k)*self.stages[arr[i][1]][0][2]
+
 
 
     def plotCascade(self):

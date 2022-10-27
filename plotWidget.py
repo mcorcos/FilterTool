@@ -163,6 +163,17 @@ class plotWidget():
         self.ax.legend()
         self.canvas.show()
 
+    def plotRetardoBand(self, F, wc, wa, labeltxt):
+        wm = max(wa[0], wa[1], wc[0], wc[1])
+        wn = min(wa[0], wa[1], wc[0], wc[1])
+        wp, m, p = signal.bode(F, np.logspace(orderOfMagnitude(wn) - 1, 1 + orderOfMagnitude(wm),
+                                              1000 + 10 ** orderOfMagnitude(wm)))
+        dpdw = diff(p) / diff(wp)
+        self.ax.semilogx(wp[:-1], dpdw, label=labeltxt)
+        self.ax.grid('log')
+        self.ax.legend()
+        self.canvas.show()
+
     def plotFaseBand(self, F, wc, wa, labeltxt):
         wm = max(wa[0], wa[1], wc[0], wc[1])
         wn = min(wa[0], wa[1], wc[0], wc[1])
